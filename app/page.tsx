@@ -32,6 +32,9 @@ export default function UploadComponent() {
   let [model, setModel] = useState("nltpt/90b-instruct-turbo");
   const [generatedCode, setGeneratedCode] = useState("");
   const [shadcn, setShadcn] = useState(true);
+  const [buildingMessage, setBuildingMessage] = useState(
+    "Reading the image..."
+  );
 
   let loading = status === "creating";
 
@@ -57,6 +60,12 @@ export default function UploadComponent() {
   async function createApp() {
     setStatus("creating");
     setGeneratedCode("");
+    setBuildingMessage("Analyzing the image...");
+
+    // Set a timeout to change the message after 10 seconds
+    setTimeout(() => {
+      setBuildingMessage("Building your app...");
+    }, 10000);
 
     let res = await fetch("/api/generateCode", {
       method: "POST",
@@ -87,14 +96,14 @@ export default function UploadComponent() {
       status === "uploaded" ? (
         <div className="flex-1 w-full flex-col flex justify-center items-center text-center mx-auto">
           <div className="max-w-xl text-center">
-            <img src="/hero-2.svg" alt="Hero" className="mx-auto mb-6" />
+            <img src="/hero-3.svg" alt="Hero" className="mx-auto mb-6" />
             <h1 className="text-4xl font-bold">
               Turn your wireframe into an app
             </h1>
             <div className="max-w-md text-center mx-auto">
               <p className="text-lg text-gray-500 mt-4 text-center">
-                Upload a screenshot or UI mockup of a website and we’ll build it
-                for you with React + Tailwind.
+                Upload an image of your website design and we’ll build it for
+                you with React + Tailwind.
               </p>
             </div>
           </div>
@@ -108,9 +117,9 @@ export default function UploadComponent() {
           <AnimatePresence>
             {status === "creating" && (
               <motion.div
-                initial={{ x: "100%" }}
+                initial={{ x: "80%" }}
                 animate={{ x: "0%" }}
-                exit={{ x: "100%" }}
+                exit={{ x: "80%" }}
                 transition={{
                   type: "spring",
                   bounce: 0,
@@ -120,9 +129,7 @@ export default function UploadComponent() {
                 className="absolute inset-x-0 bottom-0 top-1/2 flex items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0"
               >
                 <p className="animate-pulse text-3xl font-bold">
-                  {status === "creating"
-                    ? "Building your app..."
-                    : "Updating your app..."}
+                  {status === "creating" && buildingMessage}
                 </p>
               </motion.div>
             )}
@@ -164,7 +171,7 @@ export default function UploadComponent() {
                     htmlFor="file-upload"
                     className="relative rounded-md bg-white font-semibold text-black focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-gray-700"
                   >
-                    <div>Upload a screenshot / sketch</div>
+                    <div>Upload a screenshot</div>
                     <p className="font-normal text-gray-600 text-xs mt-1">
                       or drag and drop
                     </p>
