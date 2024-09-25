@@ -3,15 +3,14 @@ import dedent from "dedent";
 import Together from "together-ai";
 import { z } from "zod";
 
-// DO NOT COMMIT THIS API KEY
 let options: ConstructorParameters<typeof Together>[0] = {};
 
-// if (process.env.HELICONE_API_KEY) {
-//   options.baseURL = "https://together.helicone.ai/v1";
-//   options.defaultHeaders = {
-//     "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
-//   };
-// }
+if (process.env.HELICONE_API_KEY) {
+  options.baseURL = "https://together.helicone.ai/v1";
+  options.defaultHeaders = {
+    "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+  };
+}
 
 let together = new Together(options);
 
@@ -38,7 +37,7 @@ export async function POST(req: Request) {
     messages: [
       {
         role: "user",
-        // @ts-expect-error Need to fix the TypeScript library type
+        // @ts-expect-error need to fix the TypeScript library type
         content: [
           { type: "text", text: getDescriptionPrompt },
           {
@@ -58,7 +57,6 @@ export async function POST(req: Request) {
 
   let res = await together.chat.completions.create({
     model: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-    // max_tokens: 4000,
     messages: [
       {
         role: "system",

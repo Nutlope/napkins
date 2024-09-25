@@ -23,14 +23,15 @@ import {
 } from "@/components/ui/tooltip";
 import LoadingDots from "@/components/loading-dots";
 import { readStream } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
   let [status, setStatus] = useState<
     "initial" | "uploading" | "uploaded" | "creating" | "created"
   >("initial");
-  let [model, setModel] = useState("nltpt/90b-instruct-turbo");
+  let [model, setModel] = useState(
+    "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo"
+  );
   const [generatedCode, setGeneratedCode] = useState("");
   const [shadcn, setShadcn] = useState(true);
   const [buildingMessage, setBuildingMessage] = useState(
@@ -209,13 +210,13 @@ export default function UploadComponent() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem
-                value="nltpt/11b-instruct-turbo"
+                value="meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo"
                 className="flex items-center justify-center gap-3"
               >
                 Llama 3.2 11B Vision
               </SelectItem>
               <SelectItem
-                value="nltpt/90b-instruct-turbo"
+                value="meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo"
                 className="flex items-center justify-center gap-3"
               >
                 Llama 3.2 90B Vision
