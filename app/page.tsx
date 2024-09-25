@@ -237,7 +237,9 @@ export default function UploadComponent() {
                   }
                 >
                   <span
-                    className={`whitespace-pre-wrap text-center font-semibold leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 `}
+                    className={`${
+                      loading ? "opacity-0" : "opacity-100"
+                    } whitespace-pre-wrap text-center font-semibold leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 `}
                   >
                     Generate app
                   </span>
