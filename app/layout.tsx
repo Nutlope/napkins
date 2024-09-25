@@ -6,6 +6,7 @@ import Link from "next/link";
 import Logo from "@/public/biglogo.svg";
 import { Button } from "@/components/ui/button";
 import { GitHubLogoIcon, TwitterLogoIcon } from "@radix-ui/react-icons";
+import PlausibleProvider from "next-plausible";
 
 let title = "Napkins.dev – Screenshot to code";
 let description = "Generate your next app with a screenshot";
@@ -53,6 +54,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
+      <head>
+        <PlausibleProvider domain="napkins.dev" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col font-sans`}
       >
