@@ -1,7 +1,5 @@
 ## Tasks – v1
 
-- [ ] "Building your app" container is too big
-- [ ] Send demo video to the team for feedback
 - [ ] Test on prod
 - [ ] Test on mobile
 - [ ] Get repo README to a good state

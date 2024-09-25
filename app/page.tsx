@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import LoadingDots from "@/components/loading-dots";
 import { readStream } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -89,6 +90,13 @@ export default function UploadComponent() {
     setStatus("created");
   }
 
+  function handleSampleImage() {
+    setImageUrl(
+      "https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/be191fc8-149b-43eb-b434-baf883986c2c/appointment-booking.png"
+    );
+    setStatus("uploaded");
+  }
+
   return (
     <div className="flex justify-center mt-5 mx-10 gap-5 sm:flex-row flex-col grow">
       {status === "initial" ||
@@ -97,7 +105,7 @@ export default function UploadComponent() {
         <div className="flex-1 w-full flex-col flex justify-center items-center text-center mx-auto">
           <div className="max-w-xl text-center">
             <img src="/hero-3.svg" alt="Hero" className="mx-auto mb-6" />
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-4xl font-bold text-balance tracking-tight">
               Turn your wireframe into an app
             </h1>
             <div className="max-w-md text-center mx-auto">
@@ -109,7 +117,7 @@ export default function UploadComponent() {
           </div>
         </div>
       ) : (
-        <div className="relative flex-1 w-full overflow-hidden">
+        <div className="relative flex-1 w-full h-[80vh] overflow-x-hidden">
           <div className="isolate h-full">
             <CodeViewer code={generatedCode} showEditor />
           </div>
@@ -136,7 +144,7 @@ export default function UploadComponent() {
           </AnimatePresence>
         </div>
       )}
-      <div className="w-full max-w-xs gap-4 flex flex-col">
+      <div className="w-full max-w-xs gap-4 flex flex-col mx-auto">
         {imageUrl ? (
           <div className="relative mt-2">
             <div className="rounded-xl">
@@ -151,36 +159,47 @@ export default function UploadComponent() {
             </button>
           </div>
         ) : (
-          <FileUploader
-            handleChange={handleFileChange}
-            name="file"
-            label="Upload or drop an image here"
-            types={["png", "jpg", "jpeg"]}
-            required={true}
-            multiple={false}
-            hoverTitle="Drop here"
-          >
-            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10 cursor-pointer">
-              <div className="text-center">
-                <PhotoIcon
-                  className="mx-auto h-12 w-12 text-gray-300"
-                  aria-hidden="true"
-                />
-                <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative rounded-md bg-white font-semibold text-black focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-gray-700"
-                  >
-                    <div>Upload a screenshot</div>
-                    <p className="font-normal text-gray-600 text-xs mt-1">
-                      or drag and drop
-                    </p>
-                  </label>
+          <>
+            <FileUploader
+              handleChange={handleFileChange}
+              name="file"
+              label="Upload or drop an image here"
+              types={["png", "jpg", "jpeg"]}
+              required={true}
+              multiple={false}
+              hoverTitle="Drop here"
+            >
+              <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10 cursor-pointer">
+                <div className="text-center">
+                  <PhotoIcon
+                    className="mx-auto h-12 w-12 text-gray-300"
+                    aria-hidden="true"
+                  />
+                  <div className="mt-4 flex text-sm leading-6 text-gray-600">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative rounded-md bg-white font-semibold text-black focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-gray-700"
+                    >
+                      <div>Upload a screenshot</div>
+                      <p className="font-normal text-gray-600 text-xs mt-1">
+                        or drag and drop
+                      </p>
+                    </label>
+                  </div>
                 </div>
               </div>
+            </FileUploader>
+            <div className="text-center">
+              <button
+                className="font-medium text-blue-400 text-sm underline decoration-transparent hover:decoration-blue-200 decoration-2 underline-offset-4 transition hover:text-blue-500"
+                onClick={handleSampleImage}
+              >
+                Need an example image? Try ours.
+              </button>
             </div>
-          </FileUploader>
+          </>
         )}
+
         <div className="flex items-center gap-2">
           <label className="whitespace-nowrap">AI Model:</label>
           <Select value={model} onValueChange={setModel} defaultValue={model}>
@@ -209,7 +228,7 @@ export default function UploadComponent() {
             <TooltipTrigger asChild>
               <div>
                 <ShimmerButton
-                  className="shadow-2xl disabled:cursor-not-allowed w-full relative"
+                  className="shadow-2xl disabled:cursor-not-allowed w-full relative disabled:opacity-50"
                   onClick={createApp}
                   disabled={
                     status === "initial" ||
@@ -218,7 +237,7 @@ export default function UploadComponent() {
                   }
                 >
                   <span
-                    className={`${status === "creating" ? "opacity-0" : "opacity-100"} whitespace-pre-wrap text-center font-semibold leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10`}
+                    className={`whitespace-pre-wrap text-center font-semibold leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 `}
                   >
                     Generate app
                   </span>
