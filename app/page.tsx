@@ -26,6 +26,8 @@ import { readStream } from "@/lib/utils";
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [isFetchingScreenshot, setIsFetchingScreenshot] = useState(false);
   let [status, setStatus] = useState<
     "initial" | "uploading" | "uploaded" | "creating" | "created"
   >("initial");
@@ -59,7 +61,52 @@ export default function UploadComponent() {
     setStatus("uploaded");
   };
 
+  async function fetchScreenshotFromUrl(url: string) {
+    setIsFetchingScreenshot(true);
+    setStatus("uploading");
+    try {
+      const res = await fetch("/api/firecrawl", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to get screenshot");
+      }
+
+      const data = await res.json();
+      console.log("data:", data);
+      const { screenshotUrl } = data;
+      console.log("screenshotUrl:", screenshotUrl);
+
+      if (screenshotUrl) {
+        setImageUrl(screenshotUrl);
+        setStatus("uploaded");
+      } else {
+        throw new Error("No screenshot URL received");
+      }
+    } catch (error) {
+      console.error("Error fetching screenshot:", error);
+      setStatus("initial");
+      alert(error instanceof Error ? error.message : "Failed to get screenshot from the website URL.");
+    } finally {
+      setIsFetchingScreenshot(false);
+    }
+  }
+
+  // Removed the useEffect hook that automatically fetched screenshots
+
   async function createApp() {
+    if (!imageUrl) {
+      alert("Please upload an image or enter a valid website URL.");
+      setStatus("initial");
+      return;
+    }
+
     setStatus("creating");
     setGeneratedCode("");
     setBuildingMessage("Analyzing the image...");
@@ -111,7 +158,7 @@ export default function UploadComponent() {
             </h1>
             <div className="max-w-md text-center mx-auto">
               <p className="text-lg text-gray-500 mt-4 text-center">
-                Upload an image of your website design and we’ll build it for
+                Upload an image of your website design or enter a website URL, and we'll build it for
                 you with React + Tailwind.
               </p>
             </div>
@@ -155,8 +202,15 @@ export default function UploadComponent() {
                 className="w-full group object-cover relative"
               />
             </div>
-            <button className="absolute size-10 text-gray-900 bg-white hover:text-gray-500 rounded-full -top-3 z-10 -right-3">
-              <XCircleIcon onClick={() => setImageUrl("")} />
+            <button
+              className="absolute size-10 text-gray-900 bg-white hover:text-gray-500 rounded-full -top-3 z-10 -right-3"
+              onClick={() => {
+                setImageUrl("");
+                setWebsiteUrl("");
+                setStatus("initial");
+              }}
+            >
+              <XCircleIcon />
             </button>
           </div>
         ) : (
@@ -190,7 +244,40 @@ export default function UploadComponent() {
                 </div>
               </div>
             </FileUploader>
-            <div className="text-center">
+            
+            <div className="flex items-center justify-center my-2">
+              <div className="w-full border-t border-gray-300"></div>
+              <span className="bg-white px-3 text-sm text-gray-500">or</span>
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            
+            <div className="relative">
+              <input
+                type="text"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="Enter website URL"
+                className="w-full px-3 py-2 pr-10 border rounded-md"
+              />
+              <button
+                onClick={() => fetchScreenshotFromUrl(websiteUrl)}
+                disabled={isFetchingScreenshot || !websiteUrl}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 bg-gray-700 text-white rounded-md disabled:bg-gray-300"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            {isFetchingScreenshot && (
+              <div className="flex items-center mt-2">
+                <LoadingDots color="#000" style="small" />
+                <span className="ml-2 text-sm text-gray-600">
+                  Fetching screenshot with Firecrawl...
+                </span>
+              </div>
+            )}
+            <div className="text-center mt-2">
               <button
                 className="font-medium text-blue-400 text-sm underline decoration-transparent hover:decoration-blue-200 decoration-2 underline-offset-4 transition hover:text-blue-500"
                 onClick={handleSampleImage}
@@ -203,7 +290,11 @@ export default function UploadComponent() {
 
         <div className="flex items-center gap-2">
           <label className="whitespace-nowrap">AI Model:</label>
-          <Select value={model} onValueChange={setModel} defaultValue={model}>
+          <Select
+            value={model}
+            onValueChange={setModel}
+            defaultValue={model}
+          >
             <SelectTrigger className="">
               <img src="/meta.svg" alt="Meta" className="size-5" />
               <SelectValue />
@@ -232,9 +323,9 @@ export default function UploadComponent() {
                   className="shadow-2xl disabled:cursor-not-allowed w-full relative disabled:opacity-50"
                   onClick={createApp}
                   disabled={
-                    status === "initial" ||
-                    status === "uploading" ||
-                    status === "creating"
+                    status === "creating" ||
+                    !imageUrl ||
+                    isFetchingScreenshot
                   }
                 >
                   <span
@@ -254,9 +345,13 @@ export default function UploadComponent() {
               </div>
             </TooltipTrigger>
 
-            {status === "initial" && (
+            {(!imageUrl || isFetchingScreenshot) && (
               <TooltipContent>
-                <p>Please upload an image first</p>
+                {isFetchingScreenshot ? (
+                  <p>Fetching screenshot...</p>
+                ) : (
+                  <p>Please upload an image or enter a website URL first</p>
+                )}
               </TooltipContent>
             )}
           </Tooltip>

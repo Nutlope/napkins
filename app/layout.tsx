@@ -89,14 +89,22 @@ export default function RootLayout({
               className="font-bold hover:underline underline-offset-4"
             >
               Together AI
-            </a>{" "}
-            and{" "}
+            </a>
+            ,{" "}
             <a
               href="https://dub.sh/llama3.2vision/?utm_source=example-app&utm_medium=napkins&utm_campaign=napkins-app-signup"
               target="_blank"
               className="font-bold hover:underline underline-offset-4"
             >
               Llama 3.2 Vision
+            </a>,
+            and{" "}
+            <a
+              href="https://firecrawl.dev"
+              target="_blank"
+              className="font-bold hover:underline underline-offset-4"
+            >
+              Firecrawl
             </a>
           </p>
           <div className="flex gap-4">
