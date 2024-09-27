@@ -13,6 +13,7 @@
 - [Llama 3.2 Vision](https://ai.meta.com/blog/meta-llama-3-1/) from Meta for the Vision model
 - [Together AI](https://dub.sh/llama3.2vision/?utm_source=example-app&utm_medium=napkins&utm_campaign=napkins-app-signup) for LLM inference
 - [Sandpack](https://sandpack.codesandbox.io/) for the code sandbox
+- [Firecrawl](https://www.firecrawl.dev/) for website screenshot fetching
 - [S3](https://aws.amazon.com/s3/) for image storage
 - Next.js app router with Tailwind
 - Helicone for observability
