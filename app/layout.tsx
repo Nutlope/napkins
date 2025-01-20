@@ -84,7 +84,7 @@ export default function RootLayout({
           <p>
             Powered by{" "}
             <a
-              href="https://dub.sh/llama3.2vision/?utm_source=example-app&utm_medium=napkins&utm_campaign=napkins-app-signup"
+              href="https://togetherai.link/llama3.2vision/?utm_source=example-app&utm_medium=napkins&utm_campaign=napkins-app-signup"
               target="_blank"
               className="font-bold hover:underline underline-offset-4"
             >
@@ -92,7 +92,7 @@ export default function RootLayout({
             </a>{" "}
             and{" "}
             <a
-              href="https://dub.sh/llama3.2vision/?utm_source=example-app&utm_medium=napkins&utm_campaign=napkins-app-signup"
+              href="https://togetherai.link/llama3.2vision/?utm_source=example-app&utm_medium=napkins&utm_campaign=napkins-app-signup"
               target="_blank"
               className="font-bold hover:underline underline-offset-4"
             >
