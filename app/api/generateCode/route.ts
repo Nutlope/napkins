@@ -1,14 +1,14 @@
-import shadcnDocs from "@/lib/shadcn-docs";
-import dedent from "dedent";
-import Together from "together-ai";
-import { z } from "zod";
+import shadcnDocs from '@/lib/shadcn-docs';
+import dedent from 'dedent';
+import Together from 'together-ai';
+import { z } from 'zod';
 
 let options: ConstructorParameters<typeof Together>[0] = {};
 
 if (process.env.HELICONE_API_KEY) {
-  options.baseURL = "https://together.helicone.ai/v1";
+  options.baseURL = 'https://together.helicone.ai/v1';
   options.defaultHeaders = {
-    "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+    'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
   };
 }
 
@@ -31,17 +31,17 @@ export async function POST(req: Request) {
   let { model, imageUrl, shadcn } = result.data;
   let codingPrompt = getCodingPrompt(shadcn);
 
-  const initialCode = await together.chat.completions.create({
+  const res = await together.chat.completions.create({
     model,
     temperature: 0.2,
+    stream: true,
     messages: [
       {
-        role: "user",
-        // @ts-expect-error need to fix the TypeScript library type
+        role: 'user',
         content: [
-          { type: "text", text: getDescriptionPrompt },
+          { type: 'text', text: codingPrompt },
           {
-            type: "image_url",
+            type: 'image_url',
             image_url: {
               url: imageUrl,
             },
@@ -49,28 +49,6 @@ export async function POST(req: Request) {
         ],
       },
     ],
-  });
-
-  console.log({ initialCode });
-
-  let descriptionFromLlama = initialCode.choices[0].message?.content;
-
-  let res = await together.chat.completions.create({
-    model: "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
-    messages: [
-      {
-        role: "system",
-        content: codingPrompt,
-      },
-      {
-        role: "user",
-        content:
-          descriptionFromLlama +
-          "\nPlease ONLY return code, NO backticks or language names.",
-      },
-    ],
-    stream: true,
-    temperature: 0.2,
   });
 
   let textStream = res
@@ -94,23 +72,14 @@ export async function POST(req: Request) {
 
   return new Response(textStream, {
     headers: new Headers({
-      "Cache-Control": "no-cache",
+      'Cache-Control': 'no-cache',
     }),
   });
 }
 
-let getDescriptionPrompt = `Describe the attached screenshot in detail. I will send what you give me to a developer to recreate the original screenshot of a website that I sent you. Please listen very carefully. It's very important for my job that you follow these instructions:
-
-- Think step by step and describe the UI in great detail.
-- Make sure to describe where everything is in the UI so the developer can recreate it and if how elements are aligned
-- Pay close attention to background color, text color, font size, font family, padding, margin, border, etc. Match the colors and sizes exactly.
-- Make sure to mention every part of the screenshot including any headers, footers, sidebars, etc.
-- Make sure to use the exact text from the screenshot.
-`;
-
 function getCodingPrompt(shadcn: boolean) {
   let systemPrompt = `
-You are an expert frontend frontend React developer. You will be given a description of a website from the user, and then you will return code for it  using React and Tailwind CSS. Follow the instructions carefully, it is very important for my job. I will tip you $1 million if you do a good job:
+You are an expert frontend frontend React developer. You will be given a screenshot of a website from the user, and then you will return code for it using React and Tailwind CSS. Follow the instructions carefully, it is very important for my job. I will tip you $1 million if you do a good job:
 
 - Think carefully step by step about how to recreate the UI described in the prompt.
 - Create a React component for whatever the user asked you to create and make sure it can run by itself by using a default export
@@ -155,7 +124,7 @@ You are an expert frontend frontend React developer. You will be given a descrip
           </component>
         `
       )
-      .join("\n")}
+      .join('\n')}
     `;
   }
 
@@ -165,6 +134,7 @@ You are an expert frontend frontend React developer. You will be given a descrip
 
   systemPrompt += `
   Here are some examples of good outputs:
+
 
 ${examples
   .map(
@@ -179,17 +149,17 @@ ${examples
       </example>
   `
   )
-  .join("\n")}
+  .join('\n')}
   `;
 
   return dedent(systemPrompt);
 }
 
-export const runtime = "edge";
+export const runtime = 'edge';
 
 let examples = [
   {
-    input: `The UI mockup is a website design for an AI tool, featuring a clean and modern aesthetic. Here\'s a detailed breakdown of the design:\n\n**Header Section**\n\n* The header section is located at the top of the page and spans the full width.\n* It has a light gray background color (#F7F7F7) with a subtle shadow effect.\n* The header contains the following elements:\n\t+ A logo on the left side, which is a small black square with the text "LOGO" in white font.\n\t+ A navigation menu with four items: "Features", "About", "Pricing", and "Sign up". The text is in black font, and the links are aligned to the right.\n\t+ A search bar on the right side, which is a small oval-shaped input field with a magnifying glass icon.\n\n**Hero Section**\n\n* The hero section is located below the header and takes up most of the page.\n* It has a white background color (#FFFFFF) with a subtle gradient effect.\n* The hero section contains the following elements:\n\t+ A large heading that reads "Welcome to your all-in-one AI tool" in bold, black font (font-size: 36px; font-family: Open Sans).\n\t+ A subheading that reads "Check out all the new features in the 13.2 update in the demo below" in smaller, gray font (font-size: 18px; font-family: Open Sans).\n\t+ A call-to-action (CTA) button that reads "Get Started" in white font on a black background (font-size: 18px; font-family: Open Sans).\n\t+ An image placeholder on the right side, which is a large gray rectangle with the text "IMAGE PLACEHOLDER" in black font.\n\n**Footer Section**\n\n* The footer section is located at the bottom of the page and spans the full width.\n* It has a light gray background color (#F7F7F7) with a subtle shadow effect.\n* The footer contains the following elements:\n\t+ A copyright notice that reads "Used by 100+ companies" in small, gray font (font-size: 12px; font-family: Open Sans).\n\t+ A link to the company\'s website, which is a small text link that reads "Get Started" in blue font (font-size: 12px; font-family: Open Sans).\n\nOverall, the design is clean, modern, and easy to navigate. The use of a consistent color scheme and typography helps to create a cohesive look and feel throughout the website.`,
+    input: `A landing page screenshot`,
     output: `
 import { Button } from "@/components/ui/button"
 
