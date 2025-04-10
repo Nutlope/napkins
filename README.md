@@ -4,13 +4,12 @@
 </a>
 
 <p align="center">
-  An open source wireframe to app generator. Powered by Llama 3.2 Vision & Together.ai.
+  An open source wireframe to app generator. Powered by Llama 4 & Together.ai.
 </p>
 
 ## Tech stack
 
-- [Llama 3.1 405B](https://ai.meta.com/blog/meta-llama-3-1/) from Meta for the LLM
-- [Llama 3.2 Vision](https://ai.meta.com/blog/meta-llama-3-1/) from Meta for the Vision model
+- [Llama 4](https://ai.meta.com/blog/meta-llama-4/) from Meta for the LLM
 - [Together AI](https://togetherai.link/llama3.2vision/?utm_source=example-app&utm_medium=napkins&utm_campaign=napkins-app-signup) for LLM inference
 - [Sandpack](https://sandpack.codesandbox.io/) for the code sandbox
 - [S3](https://aws.amazon.com/s3/) for image storage
