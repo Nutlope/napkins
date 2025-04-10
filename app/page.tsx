@@ -35,7 +35,7 @@ export default function UploadComponent() {
   const [generatedCode, setGeneratedCode] = useState('');
   const [shadcn, setShadcn] = useState(false);
   const [buildingMessage, setBuildingMessage] = useState(
-    'Reading the image...'
+    'Building your app...'
   );
 
   let loading = status === 'creating';
@@ -62,12 +62,7 @@ export default function UploadComponent() {
   async function createApp() {
     setStatus('creating');
     setGeneratedCode('');
-    setBuildingMessage('Analyzing the image...');
-
-    // Set a timeout to change the message after 10 seconds
-    setTimeout(() => {
-      setBuildingMessage('Building your app...');
-    }, 10000);
+    setBuildingMessage('Building your app...');
 
     let res = await fetch('/api/generateCode', {
       method: 'POST',
@@ -137,7 +132,7 @@ export default function UploadComponent() {
                 }}
                 className='absolute inset-x-0 bottom-0 top-1/2 flex items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0'
               >
-                <p className='animate-pulse text-3xl font-bold'>
+                <p className='animate-pulse text-xl font-bold'>
                   {status === 'creating' && buildingMessage}
                 </p>
               </motion.div>
