@@ -9,8 +9,8 @@
 
 ## Tech stack
 
-- [Llama 4](https://togetherai.link/) from Meta for the LLM
-- [Together AI](https://togetherai.link/) for LLM inference
+- [Llama 4](https://togetherai.link/?utm_source=napkins&utm_medium=referral&utm_campaign=example-app) from Meta for the LLM
+- [Together AI](https://togetherai.link/?utm_source=napkins&utm_medium=referral&utm_campaign=example-app) for LLM inference
 - [Sandpack](https://sandpack.codesandbox.io/) for the code sandbox
 - [S3](https://aws.amazon.com/s3/) for image storage
 - Next.js app router with Tailwind

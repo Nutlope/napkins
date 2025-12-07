@@ -18,3 +18,6 @@ export async function* readStream(response: ReadableStream) {
 
   reader.releaseLock();
 }
+
+export const TOGETHER_LINK =
+  "https://togetherai.link/?utm_source=napkins&utm_medium=referral&utm_campaign=example-app";
