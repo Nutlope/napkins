@@ -61,7 +61,9 @@ export async function POST(req: Request) {
           if (chunk) {
             try {
               let parsed = JSON.parse(chunk);
-              let text = parsed.choices[0].delta?.content || parsed.choices[0].text;
+              let choice = parsed.choices?.[0];
+              if (!choice) return;
+              let text = choice.delta?.content || choice.text;
               if (text) controller.enqueue(text);
             } catch (error) {
               console.error(error);
