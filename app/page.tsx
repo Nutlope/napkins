@@ -37,6 +37,7 @@ export default function UploadComponent() {
   const [buildingMessage, setBuildingMessage] = useState(
     'Building your app...'
   );
+  const [error, setError] = useState<string | null>(null);
 
   let loading = status === 'creating';
 
@@ -48,7 +49,7 @@ export default function UploadComponent() {
     }
   }, [loading, generatedCode]);
 
-  const { uploadToS3 } = useS3Upload();
+  const { uploadToS3, files: s3Files } = useS3Upload();
 
   const handleFileChange = async (file: File) => {
     let objectUrl = URL.createObjectURL(file);
@@ -62,28 +63,34 @@ export default function UploadComponent() {
   async function createApp() {
     setStatus('creating');
     setGeneratedCode('');
+    setError(null);
     setBuildingMessage('Building your app...');
 
-    let res = await fetch('/api/generateCode', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        shadcn,
-        imageUrl,
-      }),
-    });
+    try {
+      let res = await fetch('/api/generateCode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          shadcn,
+          imageUrl,
+        }),
+      });
 
-    if (!res.ok) throw new Error(res.statusText);
-    if (!res.body) throw new Error('No response body');
+      if (!res.ok) throw new Error(res.statusText);
+      if (!res.body) throw new Error('No response body');
 
-    for await (let chunk of readStream(res.body)) {
-      setGeneratedCode((prev) => prev + chunk);
+      for await (let chunk of readStream(res.body)) {
+        setGeneratedCode((prev) => prev + chunk);
+      }
+
+      setStatus('created');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
+      setStatus('uploaded');
     }
-
-    setStatus('created');
   }
 
   function handleSampleImage() {
@@ -150,6 +157,19 @@ export default function UploadComponent() {
                 className='w-full group object-cover relative'
               />
             </div>
+            {status === 'uploading' && s3Files.length > 0 && (
+              <div className='mt-2'>
+                <div className='h-1.5 w-full bg-gray-200 rounded-full overflow-hidden'>
+                  <div
+                    className='h-full bg-black rounded-full transition-all duration-300'
+                    style={{ width: `${s3Files[s3Files.length - 1].progress}%` }}
+                  />
+                </div>
+                <p className='text-xs text-gray-500 mt-1 text-center'>
+                  Uploading... {Math.round(s3Files[s3Files.length - 1].progress)}%
+                </p>
+              </div>
+            )}
             <button className='absolute size-10 text-gray-900 bg-white hover:text-gray-500 rounded-full -top-3 z-10 -right-3'>
               <XCircleIcon onClick={() => setImageUrl('')} />
             </button>
@@ -246,7 +266,7 @@ export default function UploadComponent() {
                       loading ? 'opacity-0' : 'opacity-100'
                     } whitespace-pre-wrap text-center font-semibold leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 `}
                   >
-                    Generate app
+                    {status === 'created' ? 'Regenerate' : 'Generate app'}
                   </span>
 
                   {loading && (
@@ -265,6 +285,27 @@ export default function UploadComponent() {
             )}
           </Tooltip>
         </TooltipProvider>
+
+        {error && (
+          <p className='text-red-500 text-sm text-center'>{error}</p>
+        )}
+
+        {status === 'created' && generatedCode && (
+          <button
+            className='text-sm text-gray-600 hover:text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-500 transition'
+            onClick={() => {
+              let blob = new Blob([generatedCode], { type: 'text/plain' });
+              let url = URL.createObjectURL(blob);
+              let a = document.createElement('a');
+              a.href = url;
+              a.download = 'App.tsx';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            Download code
+          </button>
+        )}
       </div>
     </div>
   );
