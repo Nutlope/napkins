@@ -34,6 +34,7 @@ export async function POST(req: Request) {
   const res = await together.chat.completions.create({
     model,
     temperature: 0.2,
+    max_tokens: 32768,
     stream: true,
     messages: [
       {
@@ -59,7 +60,8 @@ export async function POST(req: Request) {
         transform(chunk, controller) {
           if (chunk) {
             try {
-              let text = JSON.parse(chunk).choices[0].text;
+              let parsed = JSON.parse(chunk);
+              let text = parsed.choices[0].delta?.content || parsed.choices[0].text;
               if (text) controller.enqueue(text);
             } catch (error) {
               console.error(error);

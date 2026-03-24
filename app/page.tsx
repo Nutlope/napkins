@@ -30,7 +30,7 @@ export default function UploadComponent() {
     'initial' | 'uploading' | 'uploaded' | 'creating' | 'created'
   >('initial');
   let [model, setModel] = useState(
-    'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
+    'moonshotai/Kimi-K2.5'
   );
   const [generatedCode, setGeneratedCode] = useState('');
   const [shadcn, setShadcn] = useState(false);
@@ -200,21 +200,30 @@ export default function UploadComponent() {
           <label className='whitespace-nowrap'>AI Model:</label>
           <Select value={model} onValueChange={setModel} defaultValue={model}>
             <SelectTrigger className=''>
-              <img src='/meta.svg' alt='Meta' className='size-5' />
-              <SelectValue />
+              <div className='flex items-center gap-2 w-full'>
+                <img
+                  src={
+                    model === 'moonshotai/Kimi-K2.5'
+                      ? '/kimi.svg'
+                      : model === 'zai-org/GLM-5'
+                        ? '/zhipu.svg'
+                        : '/minimax.svg'
+                  }
+                  alt=''
+                  className='size-5'
+                />
+                <span className='flex-1 text-center'><SelectValue /></span>
+              </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                value='meta-llama/Llama-4-Scout-17B-16E-Instruct'
-                className='flex items-center justify-center gap-3'
-              >
-                Llama 4 Scout
+              <SelectItem value='moonshotai/Kimi-K2.5'>
+                Kimi K2.5
               </SelectItem>
-              <SelectItem
-                value='meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
-                className='flex items-center justify-center gap-3'
-              >
-                Llama 4 Maverick
+              <SelectItem value='zai-org/GLM-5'>
+                GLM-5
+              </SelectItem>
+              <SelectItem value='MiniMaxAI/MiniMax-M2.5'>
+                MiniMax M2.5
               </SelectItem>
             </SelectContent>
           </Select>
