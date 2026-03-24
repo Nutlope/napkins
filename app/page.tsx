@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useS3Upload } from 'next-s3-upload';
 import { PhotoIcon, XCircleIcon } from '@heroicons/react/20/solid';
 import { FileUploader } from 'react-drag-drop-files';
@@ -38,6 +38,8 @@ export default function UploadComponent() {
     'Building your app...'
   );
   const [error, setError] = useState<string | null>(null);
+  const [thinkingText, setThinkingText] = useState('');
+  const thinkingRef = useRef<HTMLDivElement>(null);
 
   let loading = status === 'creating';
 
@@ -48,6 +50,12 @@ export default function UploadComponent() {
       el.scrollTo({ top: end });
     }
   }, [loading, generatedCode]);
+
+  useEffect(() => {
+    if (thinkingRef.current) {
+      thinkingRef.current.scrollTop = thinkingRef.current.scrollHeight;
+    }
+  }, [thinkingText]);
 
   const { uploadToS3, files: s3Files } = useS3Upload();
 
@@ -64,6 +72,7 @@ export default function UploadComponent() {
     setStatus('creating');
     setGeneratedCode('');
     setError(null);
+    setThinkingText('');
     setBuildingMessage('Building your app...');
 
     try {
@@ -82,16 +91,20 @@ export default function UploadComponent() {
       if (!res.ok) throw new Error(res.statusText);
       if (!res.body) throw new Error('No response body');
 
-      let startedCoding = false;
       for await (let chunk of readStream(res.body)) {
         if (chunk.includes('__THINKING__')) {
           setBuildingMessage('Thinking...');
           chunk = chunk.replace('__THINKING__', '');
           if (!chunk) continue;
         }
-        if (!startedCoding && chunk) {
-          startedCoding = true;
+        if (chunk.includes('__DONE_THINKING__')) {
           setBuildingMessage('Building your app...');
+          chunk = chunk.replace('__DONE_THINKING__', '');
+          if (!chunk) continue;
+        }
+        if (chunk.startsWith('__REASON__')) {
+          setThinkingText((prev) => prev + chunk.slice('__REASON__'.length));
+          continue;
         }
         setGeneratedCode((prev) => prev + chunk);
       }
@@ -147,11 +160,18 @@ export default function UploadComponent() {
                   duration: 0.85,
                   delay: 0.1,
                 }}
-                className='absolute inset-x-0 bottom-0 top-1/2 flex items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0'
+                className='absolute inset-x-0 bottom-0 top-1/2 flex flex-col items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0 p-6'
               >
                 <p className='animate-pulse text-xl font-bold'>
-                  {status === 'creating' && buildingMessage}
+                  {buildingMessage}
                 </p>
+                {thinkingText && (
+                  <div ref={thinkingRef} className='mt-4 max-h-48 w-full max-w-md overflow-y-auto'>
+                    <p className='text-xs text-gray-500 font-mono whitespace-pre-wrap leading-relaxed'>
+                      {thinkingText}
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
