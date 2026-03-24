@@ -82,7 +82,17 @@ export default function UploadComponent() {
       if (!res.ok) throw new Error(res.statusText);
       if (!res.body) throw new Error('No response body');
 
+      let startedCoding = false;
       for await (let chunk of readStream(res.body)) {
+        if (chunk.includes('__THINKING__')) {
+          setBuildingMessage('Thinking...');
+          chunk = chunk.replace('__THINKING__', '');
+          if (!chunk) continue;
+        }
+        if (!startedCoding && chunk) {
+          startedCoding = true;
+          setBuildingMessage('Building your app...');
+        }
         setGeneratedCode((prev) => prev + chunk);
       }
 

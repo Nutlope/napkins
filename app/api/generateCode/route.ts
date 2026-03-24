@@ -52,6 +52,7 @@ export async function POST(req: Request) {
     ],
   });
 
+  let sentThinking = false;
   let textStream = res
     .toReadableStream()
     .pipeThrough(new TextDecoderStream())
@@ -63,6 +64,13 @@ export async function POST(req: Request) {
               let parsed = JSON.parse(chunk);
               let choice = parsed.choices?.[0];
               if (!choice) return;
+
+              let reasoning = choice.delta?.reasoning_content || choice.delta?.reasoning;
+              if (reasoning && !sentThinking) {
+                sentThinking = true;
+                controller.enqueue('__THINKING__');
+              }
+
               let text = choice.delta?.content || choice.text;
               if (text) controller.enqueue(text);
             } catch (error) {
