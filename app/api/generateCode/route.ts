@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   const res = await (together.chat.completions.create as Function)({
     model,
     temperature: 0.2,
-    max_tokens: 32768,
+    max_tokens: 65536,
     stream: true,
     reasoning: { enabled: false },
     messages: [
