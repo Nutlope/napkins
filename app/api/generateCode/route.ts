@@ -67,6 +67,10 @@ export async function POST(req: Request) {
               let choice = parsed.choices?.[0];
               if (!choice) return;
 
+              if (choice.finish_reason) {
+                console.log('Stream finished:', choice.finish_reason);
+              }
+
               let reasoning = choice.delta?.reasoning_content || choice.delta?.reasoning;
               if (reasoning) {
                 if (!sentThinking) {
