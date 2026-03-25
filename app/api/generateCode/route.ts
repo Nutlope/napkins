@@ -31,11 +31,12 @@ export async function POST(req: Request) {
   let { model, imageUrl, shadcn } = result.data;
   let codingPrompt = getCodingPrompt(shadcn);
 
-  const res = await together.chat.completions.create({
+  const res = await (together.chat.completions.create as Function)({
     model,
     temperature: 0.2,
     max_tokens: 32768,
     stream: true,
+    reasoning: { enabled: false },
     messages: [
       {
         role: 'user',
@@ -50,7 +51,6 @@ export async function POST(req: Request) {
         ],
       },
     ],
-    ...({ reasoning: { enabled: false } } as any),
   });
 
   let sentThinking = false;
