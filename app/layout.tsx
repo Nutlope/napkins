@@ -62,8 +62,8 @@ export default function RootLayout({
       >
         <header className='sm:mx-10 mx-4 mt-5'>
           <div className='flex items-center justify-between'>
-            <Link href='/'>
-              <Image src={Logo} alt='Logo' width={400} height={50} />
+            <Link href='/' className='flex items-center gap-2'>
+              <Image src='/logo.svg' alt='Together AI' width={400} height={50} />
             </Link>
             <Button
               asChild

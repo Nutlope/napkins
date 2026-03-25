@@ -40,6 +40,7 @@ export default function UploadComponent() {
   const [error, setError] = useState<string | null>(null);
   const [thinkingText, setThinkingText] = useState('');
   const thinkingRef = useRef<HTMLDivElement>(null);
+  const codeBufferRef = useRef('');
 
   let loading = status === 'creating';
 
@@ -91,6 +92,14 @@ export default function UploadComponent() {
       if (!res.ok) throw new Error(res.statusText);
       if (!res.body) throw new Error('No response body');
 
+      codeBufferRef.current = '';
+      let flushInterval = setInterval(() => {
+        if (codeBufferRef.current) {
+          setGeneratedCode((prev) => prev + codeBufferRef.current);
+          codeBufferRef.current = '';
+        }
+      }, 250);
+
       for await (let chunk of readStream(res.body)) {
         if (chunk.includes('__THINKING__')) {
           setBuildingMessage('Thinking...');
@@ -106,7 +115,13 @@ export default function UploadComponent() {
           setThinkingText((prev) => prev + chunk.slice('__REASON__'.length));
           continue;
         }
-        setGeneratedCode((prev) => prev + chunk);
+        codeBufferRef.current += chunk;
+      }
+
+      clearInterval(flushInterval);
+      if (codeBufferRef.current) {
+        setGeneratedCode((prev) => prev + codeBufferRef.current);
+        codeBufferRef.current = '';
       }
 
       setStatus('created');
