@@ -36,8 +36,6 @@ export async function POST(req: Request) {
     temperature: 0.2,
     max_tokens: 32768,
     stream: true,
-    // @ts-expect-error Together AI supports reasoning param for Kimi K2.5
-    reasoning: { enabled: false },
     messages: [
       {
         role: 'user',
@@ -52,6 +50,7 @@ export async function POST(req: Request) {
         ],
       },
     ],
+    ...({ reasoning: { enabled: false } } as any),
   });
 
   let sentThinking = false;
