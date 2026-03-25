@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useS3Upload } from 'next-s3-upload';
 import { PhotoIcon, XCircleIcon } from '@heroicons/react/20/solid';
 import { FileUploader } from 'react-drag-drop-files';
@@ -30,13 +30,16 @@ export default function UploadComponent() {
     'initial' | 'uploading' | 'uploaded' | 'creating' | 'created'
   >('initial');
   let [model, setModel] = useState(
-    'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
+    'moonshotai/Kimi-K2.5'
   );
   const [generatedCode, setGeneratedCode] = useState('');
   const [shadcn, setShadcn] = useState(false);
   const [buildingMessage, setBuildingMessage] = useState(
     'Building your app...'
   );
+  const [error, setError] = useState<string | null>(null);
+  const [thinkingText, setThinkingText] = useState('');
+  const thinkingRef = useRef<HTMLDivElement>(null);
 
   let loading = status === 'creating';
 
@@ -48,7 +51,13 @@ export default function UploadComponent() {
     }
   }, [loading, generatedCode]);
 
-  const { uploadToS3 } = useS3Upload();
+  useEffect(() => {
+    if (thinkingRef.current) {
+      thinkingRef.current.scrollTop = thinkingRef.current.scrollHeight;
+    }
+  }, [thinkingText]);
+
+  const { uploadToS3, files: s3Files } = useS3Upload();
 
   const handleFileChange = async (file: File) => {
     let objectUrl = URL.createObjectURL(file);
@@ -62,28 +71,49 @@ export default function UploadComponent() {
   async function createApp() {
     setStatus('creating');
     setGeneratedCode('');
+    setError(null);
+    setThinkingText('');
     setBuildingMessage('Building your app...');
 
-    let res = await fetch('/api/generateCode', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        shadcn,
-        imageUrl,
-      }),
-    });
+    try {
+      let res = await fetch('/api/generateCode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          shadcn,
+          imageUrl,
+        }),
+      });
 
-    if (!res.ok) throw new Error(res.statusText);
-    if (!res.body) throw new Error('No response body');
+      if (!res.ok) throw new Error(res.statusText);
+      if (!res.body) throw new Error('No response body');
 
-    for await (let chunk of readStream(res.body)) {
-      setGeneratedCode((prev) => prev + chunk);
+      for await (let chunk of readStream(res.body)) {
+        if (chunk.includes('__THINKING__')) {
+          setBuildingMessage('Thinking...');
+          chunk = chunk.replace('__THINKING__', '');
+          if (!chunk) continue;
+        }
+        if (chunk.includes('__DONE_THINKING__')) {
+          setBuildingMessage('Building your app...');
+          chunk = chunk.replace('__DONE_THINKING__', '');
+          if (!chunk) continue;
+        }
+        if (chunk.startsWith('__REASON__')) {
+          setThinkingText((prev) => prev + chunk.slice('__REASON__'.length));
+          continue;
+        }
+        setGeneratedCode((prev) => prev + chunk);
+      }
+
+      setStatus('created');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
+      setStatus('uploaded');
     }
-
-    setStatus('created');
   }
 
   function handleSampleImage() {
@@ -130,11 +160,18 @@ export default function UploadComponent() {
                   duration: 0.85,
                   delay: 0.1,
                 }}
-                className='absolute inset-x-0 bottom-0 top-1/2 flex items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0'
+                className='absolute inset-x-0 bottom-0 top-1/2 flex flex-col items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0 p-6'
               >
                 <p className='animate-pulse text-xl font-bold'>
-                  {status === 'creating' && buildingMessage}
+                  {buildingMessage}
                 </p>
+                {thinkingText && (
+                  <div ref={thinkingRef} className='mt-4 max-h-48 w-full max-w-md overflow-y-auto'>
+                    <p className='text-xs text-gray-500 font-mono whitespace-pre-wrap leading-relaxed'>
+                      {thinkingText}
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -150,6 +187,19 @@ export default function UploadComponent() {
                 className='w-full group object-cover relative'
               />
             </div>
+            {status === 'uploading' && s3Files.length > 0 && (
+              <div className='mt-2'>
+                <div className='h-1.5 w-full bg-gray-200 rounded-full overflow-hidden'>
+                  <div
+                    className='h-full bg-black rounded-full transition-all duration-300'
+                    style={{ width: `${s3Files[s3Files.length - 1].progress}%` }}
+                  />
+                </div>
+                <p className='text-xs text-gray-500 mt-1 text-center'>
+                  Uploading... {Math.round(s3Files[s3Files.length - 1].progress)}%
+                </p>
+              </div>
+            )}
             <button className='absolute size-10 text-gray-900 bg-white hover:text-gray-500 rounded-full -top-3 z-10 -right-3'>
               <XCircleIcon onClick={() => setImageUrl('')} />
             </button>
@@ -200,21 +250,30 @@ export default function UploadComponent() {
           <label className='whitespace-nowrap'>AI Model:</label>
           <Select value={model} onValueChange={setModel} defaultValue={model}>
             <SelectTrigger className=''>
-              <img src='/meta.svg' alt='Meta' className='size-5' />
-              <SelectValue />
+              <div className='flex items-center gap-2 w-full'>
+                <img
+                  src={
+                    model === 'moonshotai/Kimi-K2.5'
+                      ? '/kimi.svg'
+                      : model === 'zai-org/GLM-5'
+                        ? '/zhipu.svg'
+                        : '/minimax.svg'
+                  }
+                  alt=''
+                  className='size-5'
+                />
+                <span className='flex-1 text-center'><SelectValue /></span>
+              </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem
-                value='meta-llama/Llama-4-Scout-17B-16E-Instruct'
-                className='flex items-center justify-center gap-3'
-              >
-                Llama 4 Scout
+              <SelectItem value='moonshotai/Kimi-K2.5'>
+                Kimi K2.5
               </SelectItem>
-              <SelectItem
-                value='meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
-                className='flex items-center justify-center gap-3'
-              >
-                Llama 4 Maverick
+              <SelectItem value='zai-org/GLM-5'>
+                GLM-5
+              </SelectItem>
+              <SelectItem value='MiniMaxAI/MiniMax-M2.5'>
+                MiniMax M2.5
               </SelectItem>
             </SelectContent>
           </Select>
@@ -237,7 +296,7 @@ export default function UploadComponent() {
                       loading ? 'opacity-0' : 'opacity-100'
                     } whitespace-pre-wrap text-center font-semibold leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 `}
                   >
-                    Generate app
+                    {status === 'created' ? 'Regenerate' : 'Generate app'}
                   </span>
 
                   {loading && (
@@ -256,6 +315,27 @@ export default function UploadComponent() {
             )}
           </Tooltip>
         </TooltipProvider>
+
+        {error && (
+          <p className='text-red-500 text-sm text-center'>{error}</p>
+        )}
+
+        {status === 'created' && generatedCode && (
+          <button
+            className='text-sm text-gray-600 hover:text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-500 transition'
+            onClick={() => {
+              let blob = new Blob([generatedCode], { type: 'text/plain' });
+              let url = URL.createObjectURL(blob);
+              let a = document.createElement('a');
+              a.href = url;
+              a.download = 'App.tsx';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            Download code
+          </button>
+        )}
       </div>
     </div>
   );

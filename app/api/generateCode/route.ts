@@ -34,6 +34,7 @@ export async function POST(req: Request) {
   const res = await together.chat.completions.create({
     model,
     temperature: 0.2,
+    max_tokens: 32768,
     stream: true,
     messages: [
       {
@@ -51,6 +52,8 @@ export async function POST(req: Request) {
     ],
   });
 
+  let sentThinking = false;
+  let sentDoneThinking = false;
   let textStream = res
     .toReadableStream()
     .pipeThrough(new TextDecoderStream())
@@ -59,8 +62,28 @@ export async function POST(req: Request) {
         transform(chunk, controller) {
           if (chunk) {
             try {
-              let text = JSON.parse(chunk).choices[0].text;
-              if (text) controller.enqueue(text);
+              let parsed = JSON.parse(chunk);
+              let choice = parsed.choices?.[0];
+              if (!choice) return;
+
+              let reasoning = choice.delta?.reasoning_content || choice.delta?.reasoning;
+              if (reasoning) {
+                if (!sentThinking) {
+                  sentThinking = true;
+                  controller.enqueue('__THINKING__');
+                }
+                controller.enqueue('__REASON__' + reasoning);
+                return;
+              }
+
+              let text = choice.delta?.content || choice.text;
+              if (text) {
+                if (sentThinking && !sentDoneThinking) {
+                  sentDoneThinking = true;
+                  controller.enqueue('__DONE_THINKING__');
+                }
+                controller.enqueue(text);
+              }
             } catch (error) {
               console.error(error);
             }

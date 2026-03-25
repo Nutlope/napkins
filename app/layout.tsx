@@ -9,7 +9,7 @@ import { GitHubLogoIcon, TwitterLogoIcon } from '@radix-ui/react-icons';
 import PlausibleProvider from 'next-plausible';
 
 let title = 'Napkins.dev – Screenshot to code';
-let description = 'Generate your next app with a screenshot using Llama 4';
+let description = 'Generate your next app with a screenshot and AI';
 let url = 'https://www.napkins.dev/';
 let ogimage = 'https://www.napkins.dev/og-image.png';
 let sitename = 'napkins.dev';
@@ -89,14 +89,6 @@ export default function RootLayout({
               className='font-bold hover:underline underline-offset-4'
             >
               Together AI
-            </a>{' '}
-            and{' '}
-            <a
-              href='https://togetherai.link/'
-              target='_blank'
-              className='font-bold hover:underline underline-offset-4'
-            >
-              Llama 4
             </a>
           </p>
           <div className='flex gap-4'>
