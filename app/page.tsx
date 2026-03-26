@@ -30,7 +30,7 @@ export default function UploadComponent() {
     'initial' | 'uploading' | 'uploaded' | 'creating' | 'created'
   >('initial');
   let [model, setModel] = useState(
-    'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
+    'moonshotai/Kimi-K2.5'
   );
   const [generatedCode, setGeneratedCode] = useState('');
   const [shadcn, setShadcn] = useState(false);
