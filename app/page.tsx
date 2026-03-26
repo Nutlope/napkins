@@ -30,7 +30,7 @@ export default function UploadComponent() {
     'initial' | 'uploading' | 'uploaded' | 'creating' | 'created'
   >('initial');
   let [model, setModel] = useState(
-    'moonshotai/Kimi-K2.5'
+    'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
   );
   const [generatedCode, setGeneratedCode] = useState('');
   const [shadcn, setShadcn] = useState(false);
@@ -123,6 +123,29 @@ export default function UploadComponent() {
         setGeneratedCode((prev) => prev + codeBufferRef.current);
         codeBufferRef.current = '';
       }
+
+      // Auto-close unbalanced braces/parens from truncated output
+      setGeneratedCode((prev) => {
+        let code = prev.trim();
+        // Strip markdown fences if present
+        if (code.startsWith('```')) code = code.replace(/^```\w*\n?/, '');
+        if (code.endsWith('```')) code = code.replace(/```$/, '');
+        // Count braces/parens (skip single quotes — apostrophes in JSX text like "We'll" cause false positives)
+        let braces = 0, parens = 0, inString: string | null = null, escaped = false;
+        for (const ch of code) {
+          if (escaped) { escaped = false; continue; }
+          if (ch === '\\') { escaped = true; continue; }
+          if (inString) { if (ch === inString) inString = null; continue; }
+          if (ch === '"' || ch === '`') { inString = ch; continue; }
+          if (ch === '{') braces++;
+          if (ch === '}') braces--;
+          if (ch === '(') parens++;
+          if (ch === ')') parens--;
+        }
+        if (parens > 0) code += '\n' + ')'.repeat(parens);
+        if (braces > 0) code += '\n' + '}'.repeat(braces);
+        return code;
+      });
 
       setStatus('created');
     } catch (e) {
@@ -268,11 +291,13 @@ export default function UploadComponent() {
               <div className='flex items-center gap-2 w-full'>
                 <img
                   src={
-                    model === 'moonshotai/Kimi-K2.5'
-                      ? '/kimi.svg'
-                      : model === 'zai-org/GLM-5'
-                        ? '/zhipu.svg'
-                        : '/minimax.svg'
+                    model === 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
+                      ? '/meta.svg'
+                      : model === 'moonshotai/Kimi-K2.5'
+                        ? '/kimi.svg'
+                        : model === 'zai-org/GLM-5'
+                          ? '/zhipu.svg'
+                          : '/minimax.svg'
                   }
                   alt=''
                   className='size-5'
@@ -281,6 +306,9 @@ export default function UploadComponent() {
               </div>
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value='meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'>
+                Llama 4 Maverick
+              </SelectItem>
               <SelectItem value='moonshotai/Kimi-K2.5'>
                 Kimi K2.5
               </SelectItem>

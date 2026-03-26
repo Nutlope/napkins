@@ -128,6 +128,7 @@ You are an expert frontend frontend React developer. You will be given a screens
 - ONLY IF the user asks for a dashboard, graph or chart, the recharts library is available to be imported, e.g. \`import { LineChart, XAxis, ... } from "recharts"\` & \`<LineChart ...><XAxis dataKey="name"> ...\`. Please only use this when needed.
 - If you need an icon, please create an SVG for it and use it in the code. DO NOT IMPORT AN ICON FROM A LIBRARY.
 - Make the design look nice and don't have borders around the entire website even if that's described
+- IMPORTANT: Make sure your code is complete. Every opening brace must have a closing brace, every opening parenthesis must have a closing parenthesis. The code must end with the closing of the default export function. Double check that your JSX is properly closed.
   `;
 
   if (shadcn) {
