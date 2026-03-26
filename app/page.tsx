@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/tooltip';
 import LoadingDots from '@/components/loading-dots';
 import { readStream } from '@/lib/utils';
+import { autoClose } from '@/lib/code-utils';
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -125,27 +126,7 @@ export default function UploadComponent() {
       }
 
       // Auto-close unbalanced braces/parens from truncated output
-      setGeneratedCode((prev) => {
-        let code = prev.trim();
-        // Strip markdown fences if present
-        if (code.startsWith('```')) code = code.replace(/^```\w*\n?/, '');
-        if (code.endsWith('```')) code = code.replace(/```$/, '');
-        // Count braces/parens (skip single quotes — apostrophes in JSX text like "We'll" cause false positives)
-        let braces = 0, parens = 0, inString: string | null = null, escaped = false;
-        for (const ch of code) {
-          if (escaped) { escaped = false; continue; }
-          if (ch === '\\') { escaped = true; continue; }
-          if (inString) { if (ch === inString) inString = null; continue; }
-          if (ch === '"' || ch === '`') { inString = ch; continue; }
-          if (ch === '{') braces++;
-          if (ch === '}') braces--;
-          if (ch === '(') parens++;
-          if (ch === ')') parens--;
-        }
-        if (parens > 0) code += '\n' + ')'.repeat(parens);
-        if (braces > 0) code += '\n' + '}'.repeat(braces);
-        return code;
-      });
+      setGeneratedCode((prev) => autoClose(prev));
 
       setStatus('created');
     } catch (e) {
