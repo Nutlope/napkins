@@ -7,7 +7,7 @@ import dedent from "dedent";
 import * as esbuild from "esbuild";
 import * as fs from "fs";
 import * as path from "path";
-import { autoClose, stripFences } from "../lib/code-utils";
+import { stripFences } from "../lib/code-utils";
 
 const DATA_DIR = path.join(__dirname, "../data");
 const imageName = process.argv[2] || "appointment-booking.png";
@@ -141,24 +141,10 @@ async function main() {
   console.log(`\nFinish reason: ${finishReason}`);
   console.log(`Total chars: ${code.length}`);
 
-  // Diagnostics: check before auto-close
-  const beforeCheck = validateCode(code);
-  console.log(`\n=== BEFORE AUTO-CLOSE ===`);
-  console.log(`Complete: ${beforeCheck.complete}, Issues: ${beforeCheck.issues.join(", ") || "none"}`);
-
-  // Auto-close
-  const fixed = autoClose(code);
-  const afterCheck = validateCode(fixed);
-  console.log(`\n=== AFTER AUTO-CLOSE ===`);
-  console.log(`Complete: ${afterCheck.complete}, Issues: ${afterCheck.issues.join(", ") || "none"}`);
-  if (fixed !== code) {
-    console.log("Auto-close ADDED characters:");
-    console.log(fixed.slice(code.length));
-    console.log("\n=== LAST 5 LINES (FIXED) ===");
-    console.log(fixed.split("\n").slice(-5).join("\n"));
-  } else {
-    console.log("Auto-close made NO changes");
-  }
+  // Validate
+  const check = validateCode(code);
+  console.log(`\n=== VALIDATION ===`);
+  console.log(`Complete: ${check.complete}, Issues: ${check.issues.join(", ") || "none"}`);
 
   // Check if starts with markdown fence
   const trimmed = code.trim();

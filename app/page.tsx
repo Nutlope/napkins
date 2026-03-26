@@ -23,7 +23,6 @@ import {
 } from '@/components/ui/tooltip';
 import LoadingDots from '@/components/loading-dots';
 import { readStream } from '@/lib/utils';
-import { autoClose } from '@/lib/code-utils';
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -124,9 +123,6 @@ export default function UploadComponent() {
         setGeneratedCode((prev) => prev + codeBufferRef.current);
         codeBufferRef.current = '';
       }
-
-      // Auto-close unbalanced braces/parens from truncated output
-      setGeneratedCode((prev) => autoClose(prev));
 
       setStatus('created');
     } catch (e) {

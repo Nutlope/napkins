@@ -1,18 +1,17 @@
 /**
- * Focused eval — run just Maverick against all images, 8 times each.
+ * Fireworks eval — raw, no guardrails (no autoClose/stripFences/stripPostamble).
+ * Usage: npx tsx scripts/eval-fireworks.ts [model] [runs]
+ * Example: npx tsx scripts/eval-fireworks.ts accounts/fireworks/models/kimi-k2p5 20
  */
-import Together from "together-ai";
-import dedent from "dedent";
 import * as esbuild from "esbuild";
 import * as fs from "fs";
 import * as path from "path";
-import { stripFences } from "../lib/code-utils";
+import dedent from "dedent";
 
-const MODEL = process.argv[2] || "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8";
+const MODEL = process.argv[2] || "accounts/fireworks/models/kimi-k2p5";
 const DATA_DIR = path.join(__dirname, "../data");
 const RUNS = parseInt(process.argv[3] || "8", 10);
-
-const together = new Together();
+const FIREWORKS_KEY = process.env.FIREWORKS_API_KEY || "fw_3ZSdVXSjCTMCXx7XXTL8dAJH";
 
 function getImages() {
   return fs.readdirSync(DATA_DIR)
@@ -104,18 +103,17 @@ export default function LandingPage() {
 </example>
 `;
 
-function validateCode(code: string) {
+// Raw validation — no guardrails, just check the code as-is
+function validateRaw(code: string) {
   const issues: string[] = [];
-  let trimmed = code.trim();
+  const trimmed = code.trim();
   if (trimmed.startsWith("```") || trimmed.endsWith("```")) issues.push("markdown_fence");
-  trimmed = stripFences(trimmed);
   if (!trimmed.includes("export default")) issues.push("missing_default_export");
 
   try {
     esbuild.transformSync(trimmed, { loader: "tsx" });
   } catch (e: any) {
     const lines = (e.message || "esbuild_error").split("\n");
-    // First line is summary, subsequent lines have the actual errors
     const details = lines.slice(0, 4).join(" | ");
     issues.push(`compile_error: ${details}`);
   }
@@ -129,30 +127,66 @@ async function run(image: { name: string; base64: string }, idx: number) {
   const start = Date.now();
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const res = await (together.chat.completions.create as Function)({
-        model: MODEL,
-        temperature: 0.2,
-        max_tokens: 65536,
-        stream: true,
-        reasoning: { enabled: false },
-        messages: [
-          { role: "user", content: [
-            { type: "text", text: systemPrompt },
-            { type: "image_url", image_url: { url: image.base64 } },
-          ]},
-        ],
+      const res = await fetch("https://api.fireworks.ai/inference/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${FIREWORKS_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          temperature: 0.2,
+          max_tokens: 65536,
+          stream: true,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: systemPrompt },
+              { type: "image_url", image_url: { url: image.base64 } },
+            ],
+          }],
+        }),
       });
 
-      let code = "", finishReason: string | null = null;
-      for await (const chunk of res) {
-        const choice = chunk.choices?.[0];
-        if (!choice) continue;
-        if (choice.finish_reason) finishReason = choice.finish_reason;
-        const text = choice.delta?.content || choice.text || "";
-        if (text) code += text;
+      if (!res.ok) {
+        const status = res.status;
+        if (status >= 500 && attempt < MAX_RETRIES) {
+          const delay = attempt * 2000;
+          console.log(`  ⟳ ${image.name} #${idx} attempt ${attempt} got ${status}, retrying in ${delay / 1000}s...`);
+          await new Promise((r) => setTimeout(r, delay));
+          continue;
+        }
+        const body = await res.text();
+        return { image: image.name, run: idx, complete: false, issues: [`error: ${status} ${body.slice(0, 200)}`], finish_reason: null, chars: 0, ms: Date.now() - start, attempts: attempt };
       }
 
-      // Retry if stream was truncated (finish_reason != "stop")
+      let code = "", finishReason: string | null = null;
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6);
+          if (data === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(data);
+            const choice = parsed.choices?.[0];
+            if (!choice) continue;
+            if (choice.finish_reason) finishReason = choice.finish_reason;
+            const text = choice.delta?.content || "";
+            if (text) code += text;
+          } catch {}
+        }
+      }
+
+      // NO guardrails — raw code only
       if (finishReason !== "stop" && attempt < MAX_RETRIES) {
         const delay = attempt * 2000;
         console.log(`  ⟳ ${image.name} #${idx} attempt ${attempt} truncated (finish_reason=${finishReason}), retrying in ${delay / 1000}s...`);
@@ -160,26 +194,25 @@ async function run(image: { name: string; base64: string }, idx: number) {
         continue;
       }
 
-      const { complete, issues } = validateCode(code);
+      const { complete, issues } = validateRaw(code);
       return { image: image.name, run: idx, complete, issues, finish_reason: finishReason, chars: code.length, ms: Date.now() - start, attempts: attempt };
     } catch (e: any) {
-      const status = e.status || e.statusCode;
-      if (status >= 500 && attempt < MAX_RETRIES) {
+      if (attempt < MAX_RETRIES) {
         const delay = attempt * 2000;
-        console.log(`  ⟳ ${image.name} #${idx} attempt ${attempt} got ${status}, retrying in ${delay / 1000}s...`);
+        console.log(`  ⟳ ${image.name} #${idx} attempt ${attempt} error: ${e.message?.slice(0, 100)}, retrying in ${delay / 1000}s...`);
         await new Promise((r) => setTimeout(r, delay));
         continue;
       }
       return { image: image.name, run: idx, complete: false, issues: ["error: " + e.message], finish_reason: null, chars: 0, ms: Date.now() - start, attempts: attempt };
     }
   }
-  // unreachable, but satisfies TS
   return { image: image.name, run: idx, complete: false, issues: ["max_retries_exceeded"], finish_reason: null, chars: 0, ms: Date.now() - start, attempts: MAX_RETRIES };
 }
 
 async function main() {
   const images = getImages();
   const total = images.length * RUNS;
+  console.log(`[FIREWORKS — RAW, NO GUARDRAILS]`);
   console.log(`${MODEL}\n${images.length} images × ${RUNS} runs = ${total} total\n`);
 
   let done = 0;

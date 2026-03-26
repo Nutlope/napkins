@@ -26,7 +26,7 @@ export function countDelimiters(code: string) {
 
 // Strip trailing non-code text (model reasoning, second code blocks) that
 // sometimes appears after a complete React component.
-function stripPostamble(code: string): string {
+export function stripPostamble(code: string): string {
   const lines = code.split('\n');
   let prevBlank = false;
 
