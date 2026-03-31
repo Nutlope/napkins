@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/tooltip';
 import LoadingDots from '@/components/loading-dots';
 import { readStream } from '@/lib/utils';
+import { stripFences } from '@/lib/code-utils';
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -58,7 +59,7 @@ export default function UploadComponent() {
     }
   }, [thinkingText]);
 
-  const { uploadToS3, files: s3Files } = useS3Upload();
+  const { uploadToS3 } = useS3Upload();
 
   const handleFileChange = async (file: File) => {
     let objectUrl = URL.createObjectURL(file);
@@ -124,6 +125,7 @@ export default function UploadComponent() {
         codeBufferRef.current = '';
       }
 
+      setGeneratedCode((prev) => stripFences(prev));
       setStatus('created');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
@@ -202,19 +204,6 @@ export default function UploadComponent() {
                 className='w-full group object-cover relative'
               />
             </div>
-            {status === 'uploading' && s3Files.length > 0 && (
-              <div className='mt-2'>
-                <div className='h-1.5 w-full bg-gray-200 rounded-full overflow-hidden'>
-                  <div
-                    className='h-full bg-black rounded-full transition-all duration-300'
-                    style={{ width: `${s3Files[s3Files.length - 1].progress}%` }}
-                  />
-                </div>
-                <p className='text-xs text-gray-500 mt-1 text-center'>
-                  Uploading... {Math.round(s3Files[s3Files.length - 1].progress)}%
-                </p>
-              </div>
-            )}
             <button className='absolute size-10 text-gray-900 bg-white hover:text-gray-500 rounded-full -top-3 z-10 -right-3'>
               <XCircleIcon onClick={() => setImageUrl('')} />
             </button>

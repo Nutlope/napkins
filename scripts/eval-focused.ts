@@ -106,9 +106,7 @@ export default function LandingPage() {
 
 function validateCode(code: string) {
   const issues: string[] = [];
-  let trimmed = code.trim();
-  if (trimmed.startsWith("```") || trimmed.endsWith("```")) issues.push("markdown_fence");
-  trimmed = stripFences(trimmed);
+  let trimmed = stripFences(code);
   if (!trimmed.includes("export default")) issues.push("missing_default_export");
 
   try {
