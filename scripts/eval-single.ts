@@ -1,112 +1,26 @@
-import shadcnDocs from '@/lib/shadcn-docs';
-import dedent from 'dedent';
-import Together from 'together-ai';
-import { z } from 'zod';
+/**
+ * Run a single eval and print the full output for debugging.
+ * Usage: npx tsx scripts/eval-single.ts [image-name] [model]
+ */
+import Together from "together-ai";
+import dedent from "dedent";
+import * as esbuild from "esbuild";
+import * as fs from "fs";
+import * as path from "path";
+import { stripFences } from "../lib/code-utils";
 
-let options: ConstructorParameters<typeof Together>[0] = {};
+const DATA_DIR = path.join(__dirname, "../data");
+const imageName = process.argv[2] || "appointment-booking.png";
+const model = process.argv[3] || "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8";
 
-if (process.env.HELICONE_API_KEY) {
-  options.baseURL = 'https://together.helicone.ai/v1';
-  options.defaultHeaders = {
-    'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
-  };
-}
+const together = new Together();
 
-let together = new Together(options);
+const imageBase64 = `data:image/png;base64,${fs
+  .readFileSync(path.join(DATA_DIR, imageName))
+  .toString("base64")}`;
 
-export async function POST(req: Request) {
-  let json = await req.json();
-  let result = z
-    .object({
-      model: z.string(),
-      imageUrl: z.string(),
-      shadcn: z.boolean().default(false),
-    })
-    .safeParse(json);
-
-  if (result.error) {
-    return new Response(result.error.message, { status: 422 });
-  }
-
-  let { model, imageUrl, shadcn } = result.data;
-  let codingPrompt = getCodingPrompt(shadcn);
-
-  const res = await (together.chat.completions.create as Function)({
-    model,
-    temperature: 0.2,
-    max_tokens: 65536,
-    stream: true,
-    reasoning: { enabled: false },
-    messages: [
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: codingPrompt },
-          {
-            type: 'image_url',
-            image_url: {
-              url: imageUrl,
-            },
-          },
-        ],
-      },
-    ],
-  });
-
-  let sentThinking = false;
-  let sentDoneThinking = false;
-  let textStream = res
-    .toReadableStream()
-    .pipeThrough(new TextDecoderStream())
-    .pipeThrough(
-      new TransformStream({
-        transform(chunk, controller) {
-          if (chunk) {
-            try {
-              let parsed = JSON.parse(chunk);
-              let choice = parsed.choices?.[0];
-              if (!choice) return;
-
-              if (choice.finish_reason) {
-                console.log('Stream finished:', choice.finish_reason);
-              }
-
-              let reasoning = choice.delta?.reasoning_content || choice.delta?.reasoning;
-              if (reasoning) {
-                if (!sentThinking) {
-                  sentThinking = true;
-                  controller.enqueue('__THINKING__');
-                }
-                controller.enqueue('__REASON__' + reasoning);
-                return;
-              }
-
-              let text = choice.delta?.content || choice.text;
-              if (text) {
-                if (sentThinking && !sentDoneThinking) {
-                  sentDoneThinking = true;
-                  controller.enqueue('__DONE_THINKING__');
-                }
-                controller.enqueue(text);
-              }
-            } catch (error) {
-              console.error(error);
-            }
-          }
-        },
-      })
-    )
-    .pipeThrough(new TextEncoderStream());
-
-  return new Response(textStream, {
-    headers: new Headers({
-      'Cache-Control': 'no-cache',
-    }),
-  });
-}
-
-function getCodingPrompt(shadcn: boolean) {
-  let systemPrompt = `
+// Same prompt as route.ts
+const systemPrompt = dedent`
 You are an expert frontend frontend React developer. You will be given a screenshot of a website from the user, and then you will return code for it using React and Tailwind CSS. Follow the instructions carefully, it is very important for my job. I will tip you $1 million if you do a good job:
 
 - Think carefully step by step about how to recreate the UI described in the prompt.
@@ -128,68 +42,16 @@ You are an expert frontend frontend React developer. You will be given a screens
 - ONLY IF the user asks for a dashboard, graph or chart, the recharts library is available to be imported, e.g. \`import { LineChart, XAxis, ... } from "recharts"\` & \`<LineChart ...><XAxis dataKey="name"> ...\`. Please only use this when needed.
 - If you need an icon, please create an SVG for it and use it in the code. DO NOT IMPORT AN ICON FROM A LIBRARY.
 - Make the design look nice and don't have borders around the entire website even if that's described
-- IMPORTANT: Make sure your code is complete. Every opening brace must have a closing brace, every opening parenthesis must have a closing parenthesis. The code must end with the closing of the default export function. Double check that your JSX is properly closed.
-  `;
 
-  if (shadcn) {
-    systemPrompt += `
-    There are some prestyled components available for use. Please use your best judgement to use any of these components if the app calls for one.
+NO OTHER LIBRARIES (e.g. zod, hookform) ARE INSTALLED OR ABLE TO BE IMPORTED.
 
-    Here are the components that are available, along with how to import them, and how to use them:
+Here are some examples of good outputs:
 
-    ${shadcnDocs
-      .map(
-        (component) => `
-          <component>
-          <name>
-          ${component.name}
-          </name>
-          <import-instructions>
-          ${component.importDocs}
-          </import-instructions>
-          <usage-instructions>
-          ${component.usageDocs}
-          </usage-instructions>
-          </component>
-        `
-      )
-      .join('\n')}
-    `;
-  }
-
-  systemPrompt += `
-    NO OTHER LIBRARIES (e.g. zod, hookform) ARE INSTALLED OR ABLE TO BE IMPORTED.
-  `;
-
-  systemPrompt += `
-  Here are some examples of good outputs:
-
-
-${examples
-  .map(
-    (example) => `
-      <example>
-      <input>
-      ${example.input}
-      </input>
-      <output>
-      ${example.output}
-      </output>
-      </example>
-  `
-  )
-  .join('\n')}
-  `;
-
-  return dedent(systemPrompt);
-}
-
-export const runtime = 'edge';
-
-let examples = [
-  {
-    input: `A landing page screenshot`,
-    output: `
+<example>
+<input>
+A landing page screenshot
+</input>
+<output>
 import { Button } from "@/components/ui/button"
 
 export default function LandingPage() {
@@ -234,6 +96,83 @@ export default function LandingPage() {
     </div>
   )
 }
-    `,
-  },
-];
+</output>
+</example>
+`;
+
+async function main() {
+  console.log(`Model: ${model}`);
+  console.log(`Image: ${imageName}\n`);
+
+  const res = await (together.chat.completions.create as Function)({
+    model,
+    temperature: 0.2,
+    max_tokens: 65536,
+    stream: true,
+    reasoning: { enabled: false },
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: systemPrompt },
+          { type: "image_url", image_url: { url: imageBase64 } },
+        ],
+      },
+    ],
+  });
+
+  let code = "";
+  let finishReason: string | null = null;
+
+  for await (const chunk of res) {
+    const choice = chunk.choices?.[0];
+    if (!choice) continue;
+    if (choice.finish_reason) finishReason = choice.finish_reason;
+    const text = choice.delta?.content || choice.text || "";
+    if (text) code += text;
+  }
+
+  // Save full output to file for analysis
+  fs.writeFileSync(path.join(__dirname, "../eval-output.tsx"), code);
+  console.log("Full output saved to eval-output.tsx");
+  console.log("=== LAST 10 LINES (RAW) ===");
+  const lines = code.split("\n");
+  console.log(lines.slice(-10).join("\n"));
+  console.log(`\nFinish reason: ${finishReason}`);
+  console.log(`Total chars: ${code.length}`);
+
+  // Validate
+  const check = validateCode(code);
+  console.log(`\n=== VALIDATION ===`);
+  console.log(`Complete: ${check.complete}, Issues: ${check.issues.join(", ") || "none"}`);
+
+  // Check if starts with markdown fence
+  const trimmed = code.trim();
+  if (trimmed.startsWith("```")) {
+    console.log("\n⚠️  Output starts with markdown fence!");
+    console.log("First 50 chars:", JSON.stringify(trimmed.slice(0, 50)));
+  }
+  if (trimmed.endsWith("```")) {
+    console.log("\n⚠️  Output ends with markdown fence!");
+    console.log("Last 50 chars:", JSON.stringify(trimmed.slice(-50)));
+  }
+}
+
+function validateCode(code: string) {
+  const issues: string[] = [];
+  let trimmed = code.trim();
+  if (trimmed.startsWith("```") || trimmed.endsWith("```")) issues.push("markdown_fence");
+  trimmed = stripFences(trimmed);
+  if (!trimmed.includes("export default")) issues.push("missing_default_export");
+
+  try {
+    esbuild.transformSync(trimmed, { loader: "tsx" });
+  } catch (e: any) {
+    const msg = e.message?.split("\n")[0] || "esbuild_error";
+    issues.push(`compile_error: ${msg}`);
+  }
+
+  return { complete: issues.length === 0, issues };
+}
+
+main().catch(console.error);

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/tooltip';
 import LoadingDots from '@/components/loading-dots';
 import { readStream } from '@/lib/utils';
+import { stripFences } from '@/lib/code-utils';
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -40,6 +41,7 @@ export default function UploadComponent() {
   const [error, setError] = useState<string | null>(null);
   const [thinkingText, setThinkingText] = useState('');
   const thinkingRef = useRef<HTMLDivElement>(null);
+  const codeBufferRef = useRef('');
 
   let loading = status === 'creating';
 
@@ -57,7 +59,7 @@ export default function UploadComponent() {
     }
   }, [thinkingText]);
 
-  const { uploadToS3, files: s3Files } = useS3Upload();
+  const { uploadToS3 } = useS3Upload();
 
   const handleFileChange = async (file: File) => {
     let objectUrl = URL.createObjectURL(file);
@@ -91,6 +93,14 @@ export default function UploadComponent() {
       if (!res.ok) throw new Error(res.statusText);
       if (!res.body) throw new Error('No response body');
 
+      codeBufferRef.current = '';
+      let flushInterval = setInterval(() => {
+        if (codeBufferRef.current) {
+          setGeneratedCode((prev) => prev + codeBufferRef.current);
+          codeBufferRef.current = '';
+        }
+      }, 250);
+
       for await (let chunk of readStream(res.body)) {
         if (chunk.includes('__THINKING__')) {
           setBuildingMessage('Thinking...');
@@ -106,9 +116,16 @@ export default function UploadComponent() {
           setThinkingText((prev) => prev + chunk.slice('__REASON__'.length));
           continue;
         }
-        setGeneratedCode((prev) => prev + chunk);
+        codeBufferRef.current += chunk;
       }
 
+      clearInterval(flushInterval);
+      if (codeBufferRef.current) {
+        setGeneratedCode((prev) => prev + codeBufferRef.current);
+        codeBufferRef.current = '';
+      }
+
+      setGeneratedCode((prev) => stripFences(prev));
       setStatus('created');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
@@ -187,19 +204,6 @@ export default function UploadComponent() {
                 className='w-full group object-cover relative'
               />
             </div>
-            {status === 'uploading' && s3Files.length > 0 && (
-              <div className='mt-2'>
-                <div className='h-1.5 w-full bg-gray-200 rounded-full overflow-hidden'>
-                  <div
-                    className='h-full bg-black rounded-full transition-all duration-300'
-                    style={{ width: `${s3Files[s3Files.length - 1].progress}%` }}
-                  />
-                </div>
-                <p className='text-xs text-gray-500 mt-1 text-center'>
-                  Uploading... {Math.round(s3Files[s3Files.length - 1].progress)}%
-                </p>
-              </div>
-            )}
             <button className='absolute size-10 text-gray-900 bg-white hover:text-gray-500 rounded-full -top-3 z-10 -right-3'>
               <XCircleIcon onClick={() => setImageUrl('')} />
             </button>
@@ -253,11 +257,13 @@ export default function UploadComponent() {
               <div className='flex items-center gap-2 w-full'>
                 <img
                   src={
-                    model === 'moonshotai/Kimi-K2.5'
-                      ? '/kimi.svg'
-                      : model === 'zai-org/GLM-5'
-                        ? '/zhipu.svg'
-                        : '/minimax.svg'
+                    model === 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
+                      ? '/meta.svg'
+                      : model === 'moonshotai/Kimi-K2.5'
+                        ? '/kimi.svg'
+                        : model === 'zai-org/GLM-5'
+                          ? '/zhipu.svg'
+                          : '/minimax.svg'
                   }
                   alt=''
                   className='size-5'
@@ -266,6 +272,9 @@ export default function UploadComponent() {
               </div>
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value='meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'>
+                Llama 4 Maverick
+              </SelectItem>
               <SelectItem value='moonshotai/Kimi-K2.5'>
                 Kimi K2.5
               </SelectItem>
