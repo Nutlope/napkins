@@ -272,9 +272,6 @@ export default function UploadComponent() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'>
-                Llama 4 Maverick
-              </SelectItem>
               <SelectItem value='moonshotai/Kimi-K2.5'>
                 Kimi K2.5
               </SelectItem>
