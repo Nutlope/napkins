@@ -29,21 +29,6 @@ export async function POST(req: Request) {
   }
 
   let { model, imageUrl, shadcn } = result.data;
-  if (imageUrl.startsWith('/')) {
-    let localImageUrl = new URL(imageUrl, req.url).toString();
-    let imageRes = await fetch(localImageUrl);
-    if (!imageRes.ok) {
-      return new Response('Failed to load demo image', { status: 500 });
-    }
-
-    let mimeType = imageRes.headers.get('content-type') || 'image/png';
-    let bytes = new Uint8Array(await imageRes.arrayBuffer());
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    imageUrl = `data:${mimeType};base64,${btoa(binary)}`;
-  }
   let codingPrompt = getCodingPrompt(shadcn);
 
   const res = await (together.chat.completions.create as Function)({

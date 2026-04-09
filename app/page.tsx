@@ -125,28 +125,11 @@ export default function UploadComponent() {
     }
   }
 
-  async function handleSampleImage() {
-    setStatus('uploading');
-    setError(null);
-
-    try {
-      let res = await fetch('/control-panel-demo.png');
-      if (!res.ok) throw new Error('Failed to load demo image');
-
-      let blob = await res.blob();
-      let file = new File([blob], 'control-panel-demo.png', {
-        type: blob.type || 'image/png',
-      });
-      let objectUrl = URL.createObjectURL(file);
-      setImageUrl(objectUrl);
-
-      let { url } = await uploadToS3(file);
-      setImageUrl(url);
-      setStatus('uploaded');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load demo image');
-      setStatus('initial');
-    }
+  function handleSampleImage() {
+    setImageUrl(
+      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/6ce7cca8-e237-49ef-b746-3819a3df32c5/control-panel-demo.png'
+    );
+    setStatus('uploaded');
   }
 
   return (
