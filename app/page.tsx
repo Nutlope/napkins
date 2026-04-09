@@ -127,7 +127,7 @@ export default function UploadComponent() {
 
   function handleSampleImage() {
     setImageUrl(
-      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/6ce7cca8-e237-49ef-b746-3819a3df32c5/control-panel-demo.png'
+      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/fc6d6af5-56ba-4245-ae04-1a657cffce9a/Screenshot-2026-04-09-at-13.55.42.png'
     );
     setStatus('uploaded');
   }
