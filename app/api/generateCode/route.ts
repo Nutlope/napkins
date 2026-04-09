@@ -29,6 +29,9 @@ export async function POST(req: Request) {
   }
 
   let { model, imageUrl, shadcn } = result.data;
+  if (imageUrl.startsWith('/')) {
+    imageUrl = new URL(imageUrl, req.url).toString();
+  }
   let codingPrompt = getCodingPrompt(shadcn);
 
   const res = await (together.chat.completions.create as Function)({
