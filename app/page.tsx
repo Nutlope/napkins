@@ -126,9 +126,7 @@ export default function UploadComponent() {
   }
 
   function handleSampleImage() {
-    setImageUrl(
-      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/be191fc8-149b-43eb-b434-baf883986c2c/control-panel.png'
-    );
+    setImageUrl('/control-panel-demo.png');
     setStatus('uploaded');
   }
 
