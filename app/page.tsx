@@ -5,13 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useS3Upload } from 'next-s3-upload';
 import { PhotoIcon, XCircleIcon } from '@heroicons/react/20/solid';
 import { FileUploader } from 'react-drag-drop-files';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import CodeViewer from '@/components/code-viewer';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShimmerButton from '@/components/ui/shimmerbutton';
@@ -25,14 +18,13 @@ import LoadingDots from '@/components/loading-dots';
 import { readStream } from '@/lib/utils';
 import { stripFences } from '@/lib/code-utils';
 
+const KIMI_MODEL = 'moonshotai/Kimi-K2.5';
+
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
   let [status, setStatus] = useState<
     'initial' | 'uploading' | 'uploaded' | 'creating' | 'created'
   >('initial');
-  let [model, setModel] = useState(
-    'moonshotai/Kimi-K2.5'
-  );
   const [generatedCode, setGeneratedCode] = useState('');
   const [shadcn, setShadcn] = useState(false);
   const [buildingMessage, setBuildingMessage] = useState(
@@ -84,7 +76,7 @@ export default function UploadComponent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model,
+          model: KIMI_MODEL,
           shadcn,
           imageUrl,
         }),
@@ -135,7 +127,7 @@ export default function UploadComponent() {
 
   function handleSampleImage() {
     setImageUrl(
-      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/be191fc8-149b-43eb-b434-baf883986c2c/appointment-booking.png'
+      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/be191fc8-149b-43eb-b434-baf883986c2c/control-panel.png'
     );
     setStatus('uploaded');
   }
@@ -244,45 +236,18 @@ export default function UploadComponent() {
                 className='font-medium text-blue-400 text-sm underline decoration-transparent hover:decoration-blue-200 decoration-2 underline-offset-4 transition hover:text-blue-500'
                 onClick={handleSampleImage}
               >
-                Need an example image? Try ours.
+                Need an example image? Try our control panel demo.
               </button>
             </div>
           </>
         )}
 
-        <div className='flex items-center gap-2'>
-          <label className='whitespace-nowrap'>AI Model:</label>
-          <Select value={model} onValueChange={setModel} defaultValue={model}>
-            <SelectTrigger className=''>
-              <div className='flex items-center gap-2 w-full'>
-                <img
-                  src={
-                    model === 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
-                      ? '/meta.svg'
-                      : model === 'moonshotai/Kimi-K2.5'
-                        ? '/kimi.svg'
-                        : model === 'zai-org/GLM-5'
-                          ? '/zhipu.svg'
-                          : '/minimax.svg'
-                  }
-                  alt=''
-                  className='size-5'
-                />
-                <span className='flex-1 text-center'><SelectValue /></span>
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='moonshotai/Kimi-K2.5'>
-                Kimi K2.5
-              </SelectItem>
-              <SelectItem value='zai-org/GLM-5'>
-                GLM-5
-              </SelectItem>
-              <SelectItem value='MiniMaxAI/MiniMax-M2.5'>
-                MiniMax M2.5
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <div className='flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2'>
+          <span className='text-sm font-medium text-gray-600'>AI Model</span>
+          <span className='flex items-center gap-2 text-sm font-semibold text-gray-900'>
+            <img src='/kimi.svg' alt='' className='size-5' />
+            Kimi K2.5
+          </span>
         </div>
         <TooltipProvider>
           <Tooltip>
