@@ -1,0 +1,437 @@
+[
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 1,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 10580,
+    "duration_ms": 47748
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 2,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 8586,
+    "duration_ms": 38804
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 3,
+    "raw_has_fence": false,
+    "raw_compiles": false,
+    "stripped_compiles": false,
+    "has_default_export": false,
+    "issues": [
+      "missing_default_export",
+      "compile_error: Transform failed with 1 error: | <stdin>:1:1: ERROR: Expected \";\" but found \"'ll create a React component based on the screenshot description. Since I don'\""
+    ],
+    "finish_reason": "stop",
+    "char_count": 573,
+    "duration_ms": 10641
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 4,
+    "raw_has_fence": false,
+    "raw_compiles": false,
+    "stripped_compiles": false,
+    "has_default_export": false,
+    "issues": [
+      "missing_default_export",
+      "compile_error: Transform failed with 1 error: | <stdin>:1:1: ERROR: Expected \";\" but found \"'ll create a React component based on the screenshot description. Since I don'\""
+    ],
+    "finish_reason": "stop",
+    "char_count": 573,
+    "duration_ms": 10642
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 5,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 9391,
+    "duration_ms": 51648
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 6,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": false,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence",
+      "compile_error: Transform failed with 1 error: | <stdin>:169:88: ERROR: Unexpected closing \"div\" tag does not match opening \"li\" tag"
+    ],
+    "finish_reason": "stop",
+    "char_count": 10798,
+    "duration_ms": 45517
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 7,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 9893,
+    "duration_ms": 54283
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 8,
+    "raw_has_fence": false,
+    "raw_compiles": false,
+    "stripped_compiles": false,
+    "has_default_export": false,
+    "issues": [
+      "missing_default_export",
+      "compile_error: Transform failed with 1 error: | <stdin>:1:1: ERROR: Expected \";\" but found \"'ll create a React component based on the screenshot description. Since I don'\""
+    ],
+    "finish_reason": "stop",
+    "char_count": 496,
+    "duration_ms": 1650
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 9,
+    "raw_has_fence": true,
+    "raw_compiles": true,
+    "stripped_compiles": false,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence",
+      "compile_error: Transform failed with 1 error: | <stdin>:103:20: ERROR: Expected identifier but found \"2\""
+    ],
+    "finish_reason": "stop",
+    "char_count": 8254,
+    "duration_ms": 38713
+  },
+  {
+    "model": "deepseek-ai/DeepSeek-V3.1",
+    "image": "appointment-booking.png",
+    "run": 10,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 10474,
+    "duration_ms": 87103
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 1,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 14628,
+    "duration_ms": 48722
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 2,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 12310,
+    "duration_ms": 70721
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 3,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 16574,
+    "duration_ms": 90913
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 4,
+    "raw_has_fence": false,
+    "raw_compiles": false,
+    "stripped_compiles": false,
+    "has_default_export": true,
+    "issues": [
+      "compile_error: Transform failed with 1 error: | <stdin>:286:63: ERROR: Unexpected end of file"
+    ],
+    "finish_reason": null,
+    "char_count": 13579,
+    "duration_ms": 45386
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 5,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 16022,
+    "duration_ms": 91890
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 6,
+    "raw_has_fence": false,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 13127,
+    "duration_ms": 86856
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 7,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 16843,
+    "duration_ms": 100117
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 8,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 13071,
+    "duration_ms": 77912
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 9,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 15083,
+    "duration_ms": 77453
+  },
+  {
+    "model": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "image": "appointment-booking.png",
+    "run": 10,
+    "raw_has_fence": true,
+    "raw_compiles": false,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [
+      "markdown_fence"
+    ],
+    "finish_reason": "stop",
+    "char_count": 14259,
+    "duration_ms": 40307
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 1,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 14325,
+    "duration_ms": 87964
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 2,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 11688,
+    "duration_ms": 76720
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 3,
+    "raw_has_fence": false,
+    "raw_compiles": false,
+    "stripped_compiles": false,
+    "has_default_export": false,
+    "issues": [
+      "request_error"
+    ],
+    "finish_reason": null,
+    "char_count": 0,
+    "duration_ms": 23732,
+    "error": "Premature close"
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 4,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 10228,
+    "duration_ms": 30840
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 5,
+    "raw_has_fence": false,
+    "raw_compiles": false,
+    "stripped_compiles": false,
+    "has_default_export": false,
+    "issues": [
+      "request_error"
+    ],
+    "finish_reason": null,
+    "char_count": 0,
+    "duration_ms": 20038,
+    "error": "Premature close"
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 6,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 10166,
+    "duration_ms": 57456
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 7,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 9241,
+    "duration_ms": 45784
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 8,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 14122,
+    "duration_ms": 66041
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 9,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 5019,
+    "duration_ms": 24428
+  },
+  {
+    "model": "Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "image": "appointment-booking.png",
+    "run": 10,
+    "raw_has_fence": false,
+    "raw_compiles": true,
+    "stripped_compiles": true,
+    "has_default_export": true,
+    "issues": [],
+    "finish_reason": "stop",
+    "char_count": 13494,
+    "duration_ms": 66215
+  }
+]

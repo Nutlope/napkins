@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { stripFences } from "../lib/code-utils";
 
-const DATA_DIR = path.join(__dirname, "../data");
+const DATA_DIR = path.join(__dirname, "../fixtures");
 const imageName = process.argv[2] || "appointment-booking.png";
 const model = process.argv[3] || "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8";
 

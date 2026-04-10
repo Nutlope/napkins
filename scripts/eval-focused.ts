@@ -9,7 +9,7 @@ import * as path from "path";
 import { stripFences } from "../lib/code-utils";
 
 const MODEL = process.argv[2] || "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8";
-const DATA_DIR = path.join(__dirname, "../data");
+const DATA_DIR = path.join(__dirname, "../fixtures");
 const RUNS = parseInt(process.argv[3] || "8", 10);
 
 const together = new Together();

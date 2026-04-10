@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "eval": "npx tsx scripts/eval-focused.ts",
+    "eval:appointment": "npx tsx scripts/eval-appointment.ts",
     "eval:single": "npx tsx scripts/eval-single.ts"
   },
   "dependencies": {

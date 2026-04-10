@@ -9,9 +9,9 @@ import * as path from "path";
 import dedent from "dedent";
 
 const MODEL = process.argv[2] || "accounts/fireworks/models/kimi-k2p5";
-const DATA_DIR = path.join(__dirname, "../data");
+const DATA_DIR = path.join(__dirname, "../fixtures");
 const RUNS = parseInt(process.argv[3] || "8", 10);
-const FIREWORKS_KEY = process.env.FIREWORKS_API_KEY || "fw_3ZSdVXSjCTMCXx7XXTL8dAJH";
+const FIREWORKS_KEY = process.env.FIREWORKS_API_KEY || "";
 
 function getImages() {
   return fs.readdirSync(DATA_DIR)

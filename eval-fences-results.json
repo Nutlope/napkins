@@ -1,0 +1,16 @@
+[
+  {
+    "model": "zai-org/GLM-5",
+    "run": 1,
+    "raw_has_fence": false,
+    "fence_position": "none",
+    "raw_first_50": "\"I don't see a screenshot attached to your message.\"",
+    "raw_last_50": "\"mponent with Tailwind CSS that matches it exactly.\"",
+    "stripped_compiles": false,
+    "compile_error": "Transform failed with 1 error: | <stdin>:1:2: ERROR: Expected \";\" but found \"don\"",
+    "has_default_export": false,
+    "finish_reason": "stop",
+    "char_count": 266,
+    "duration_ms": 1716
+  }
+]
