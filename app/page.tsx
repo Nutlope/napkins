@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useS3Upload } from 'next-s3-upload';
-import { PhotoIcon, XCircleIcon } from '@heroicons/react/20/solid';
+import { ArrowDownTrayIcon, ArrowTopRightOnSquareIcon, PhotoIcon, XCircleIcon } from '@heroicons/react/20/solid';
 import { FileUploader } from 'react-drag-drop-files';
 import {
   Select,
@@ -86,6 +86,21 @@ export default function UploadComponent() {
     setStatus('created');
   }
 
+  function openPreview() {
+    localStorage.setItem('napkins-preview-code', generatedCode);
+    window.open('/preview', '_blank');
+  }
+
+  function downloadCode() {
+    const blob = new Blob([generatedCode], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'App.tsx';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function handleSampleImage() {
     setImageUrl(
       'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/be191fc8-149b-43eb-b434-baf883986c2c/appointment-booking.png'
@@ -117,6 +132,25 @@ export default function UploadComponent() {
           <div className='isolate h-full'>
             <CodeViewer code={generatedCode} showEditor />
           </div>
+
+          {status === 'created' && (
+            <div className='absolute top-2 right-2 z-10 flex gap-2'>
+              <button
+                onClick={downloadCode}
+                className='inline-flex items-center gap-1.5 rounded-md bg-white/90 backdrop-blur px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-white shadow-sm border border-gray-200 transition-colors'
+              >
+                <ArrowDownTrayIcon className='size-4' />
+                Download
+              </button>
+              <button
+                onClick={openPreview}
+                className='inline-flex items-center gap-1.5 rounded-md bg-gray-900/90 backdrop-blur px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-900 shadow-sm transition-colors'
+              >
+                <ArrowTopRightOnSquareIcon className='size-4' />
+                Open preview
+              </button>
+            </div>
+          )}
 
           <AnimatePresence>
             {status === 'creating' && (
