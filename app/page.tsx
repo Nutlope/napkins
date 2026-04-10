@@ -1,17 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useS3Upload } from 'next-s3-upload';
 import { ArrowDownTrayIcon, ArrowTopRightOnSquareIcon, PhotoIcon, XCircleIcon } from '@heroicons/react/20/solid';
 import { FileUploader } from 'react-drag-drop-files';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import CodeViewer from '@/components/code-viewer';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShimmerButton from '@/components/ui/shimmerbutton';
@@ -23,20 +16,24 @@ import {
 } from '@/components/ui/tooltip';
 import LoadingDots from '@/components/loading-dots';
 import { readStream } from '@/lib/utils';
+import { stripFences } from '@/lib/code-utils';
+
+const KIMI_MODEL = 'moonshotai/Kimi-K2.5';
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
   let [status, setStatus] = useState<
     'initial' | 'uploading' | 'uploaded' | 'creating' | 'created'
   >('initial');
-  let [model, setModel] = useState(
-    'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
-  );
   const [generatedCode, setGeneratedCode] = useState('');
   const [shadcn, setShadcn] = useState(false);
   const [buildingMessage, setBuildingMessage] = useState(
     'Building your app...'
   );
+  const [error, setError] = useState<string | null>(null);
+  const [thinkingText, setThinkingText] = useState('');
+  const thinkingRef = useRef<HTMLDivElement>(null);
+  const codeBufferRef = useRef('');
 
   let loading = status === 'creating';
 
@@ -47,6 +44,12 @@ export default function UploadComponent() {
       el.scrollTo({ top: end });
     }
   }, [loading, generatedCode]);
+
+  useEffect(() => {
+    if (thinkingRef.current) {
+      thinkingRef.current.scrollTop = thinkingRef.current.scrollHeight;
+    }
+  }, [thinkingText]);
 
   const { uploadToS3 } = useS3Upload();
 
@@ -62,28 +65,64 @@ export default function UploadComponent() {
   async function createApp() {
     setStatus('creating');
     setGeneratedCode('');
+    setError(null);
+    setThinkingText('');
     setBuildingMessage('Building your app...');
 
-    let res = await fetch('/api/generateCode', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        shadcn,
-        imageUrl,
-      }),
-    });
+    try {
+      let res = await fetch('/api/generateCode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: KIMI_MODEL,
+          shadcn,
+          imageUrl,
+        }),
+      });
 
-    if (!res.ok) throw new Error(res.statusText);
-    if (!res.body) throw new Error('No response body');
+      if (!res.ok) throw new Error(res.statusText);
+      if (!res.body) throw new Error('No response body');
 
-    for await (let chunk of readStream(res.body)) {
-      setGeneratedCode((prev) => prev + chunk);
+      codeBufferRef.current = '';
+      let flushInterval = setInterval(() => {
+        if (codeBufferRef.current) {
+          setGeneratedCode((prev) => prev + codeBufferRef.current);
+          codeBufferRef.current = '';
+        }
+      }, 250);
+
+      for await (let chunk of readStream(res.body)) {
+        if (chunk.includes('__THINKING__')) {
+          setBuildingMessage('Thinking...');
+          chunk = chunk.replace('__THINKING__', '');
+          if (!chunk) continue;
+        }
+        if (chunk.includes('__DONE_THINKING__')) {
+          setBuildingMessage('Building your app...');
+          chunk = chunk.replace('__DONE_THINKING__', '');
+          if (!chunk) continue;
+        }
+        if (chunk.startsWith('__REASON__')) {
+          setThinkingText((prev) => prev + chunk.slice('__REASON__'.length));
+          continue;
+        }
+        codeBufferRef.current += chunk;
+      }
+
+      clearInterval(flushInterval);
+      if (codeBufferRef.current) {
+        setGeneratedCode((prev) => prev + codeBufferRef.current);
+        codeBufferRef.current = '';
+      }
+
+      setGeneratedCode((prev) => stripFences(prev));
+      setStatus('created');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
+      setStatus('uploaded');
     }
-
-    setStatus('created');
   }
 
   function openPreview() {
@@ -103,7 +142,7 @@ export default function UploadComponent() {
 
   function handleSampleImage() {
     setImageUrl(
-      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/be191fc8-149b-43eb-b434-baf883986c2c/appointment-booking.png'
+      'https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/fc6d6af5-56ba-4245-ae04-1a657cffce9a/Screenshot-2026-04-09-at-13.55.42.png'
     );
     setStatus('uploaded');
   }
@@ -164,11 +203,18 @@ export default function UploadComponent() {
                   duration: 0.85,
                   delay: 0.1,
                 }}
-                className='absolute inset-x-0 bottom-0 top-1/2 flex items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0'
+                className='absolute inset-x-0 bottom-0 top-1/2 flex flex-col items-center justify-center rounded-r border border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 md:inset-y-0 md:left-1/2 md:right-0 p-6'
               >
                 <p className='animate-pulse text-xl font-bold'>
-                  {status === 'creating' && buildingMessage}
+                  {buildingMessage}
                 </p>
+                {thinkingText && (
+                  <div ref={thinkingRef} className='mt-4 max-h-48 w-full max-w-md overflow-y-auto'>
+                    <p className='text-xs text-gray-500 font-mono whitespace-pre-wrap leading-relaxed'>
+                      {thinkingText}
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -224,34 +270,18 @@ export default function UploadComponent() {
                 className='font-medium text-blue-400 text-sm underline decoration-transparent hover:decoration-blue-200 decoration-2 underline-offset-4 transition hover:text-blue-500'
                 onClick={handleSampleImage}
               >
-                Need an example image? Try ours.
+                Need an example image? Try our control panel demo.
               </button>
             </div>
           </>
         )}
 
-        <div className='flex items-center gap-2'>
-          <label className='whitespace-nowrap'>AI Model:</label>
-          <Select value={model} onValueChange={setModel} defaultValue={model}>
-            <SelectTrigger className=''>
-              <img src='/meta.svg' alt='Meta' className='size-5' />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                value='meta-llama/Llama-4-Scout-17B-16E-Instruct'
-                className='flex items-center justify-center gap-3'
-              >
-                Llama 4 Scout
-              </SelectItem>
-              <SelectItem
-                value='meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
-                className='flex items-center justify-center gap-3'
-              >
-                Llama 4 Maverick
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <div className='flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2'>
+          <span className='text-sm font-medium text-gray-600'>AI Model</span>
+          <span className='flex items-center gap-2 text-sm font-semibold text-gray-900'>
+            <img src='/kimi.svg' alt='' className='size-5' />
+            Kimi K2.5
+          </span>
         </div>
         <TooltipProvider>
           <Tooltip>
@@ -271,7 +301,7 @@ export default function UploadComponent() {
                       loading ? 'opacity-0' : 'opacity-100'
                     } whitespace-pre-wrap text-center font-semibold leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 `}
                   >
-                    Generate app
+                    {status === 'created' ? 'Regenerate' : 'Generate app'}
                   </span>
 
                   {loading && (
@@ -290,6 +320,27 @@ export default function UploadComponent() {
             )}
           </Tooltip>
         </TooltipProvider>
+
+        {error && (
+          <p className='text-red-500 text-sm text-center'>{error}</p>
+        )}
+
+        {status === 'created' && generatedCode && (
+          <button
+            className='text-sm text-gray-600 hover:text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-500 transition'
+            onClick={() => {
+              let blob = new Blob([generatedCode], { type: 'text/plain' });
+              let url = URL.createObjectURL(blob);
+              let a = document.createElement('a');
+              a.href = url;
+              a.download = 'App.tsx';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            Download code
+          </button>
+        )}
       </div>
     </div>
   );

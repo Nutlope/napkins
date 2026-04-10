@@ -4,12 +4,12 @@
 </a>
 
 <p align="center">
-  An open source wireframe to app generator. Powered by Llama 4 & Together.ai.
+  An open source wireframe to app generator. Powered by Kimi K2.5 & Together.ai.
 </p>
 
 ## Tech stack
 
-- [Llama 4](https://togetherai.link/) from Meta for the LLM
+- [Kimi K2.5](https://togetherai.link/) for the LLM
 - [Together AI](https://togetherai.link/) for LLM inference
 - [Sandpack](https://sandpack.codesandbox.io/) for the code sandbox
 - [S3](https://aws.amazon.com/s3/) for image storage
