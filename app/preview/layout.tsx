@@ -9,5 +9,10 @@ export default function PreviewLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <style>{`[data-header-github] { display: none !important; }`}</style>
+      {children}
+    </>
+  );
 }

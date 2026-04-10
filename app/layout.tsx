@@ -69,6 +69,7 @@ export default function RootLayout({
               asChild
               variant='outline'
               className='hidden sm:inline-flex gap-2'
+              data-header-github
             >
               <Link href='https://github.com/nutlope/napkins' target='_blank'>
                 <GitHubLogoIcon className='size-4' />
