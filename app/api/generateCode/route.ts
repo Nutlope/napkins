@@ -31,9 +31,10 @@ export async function POST(req: Request) {
   let { model, imageUrl, shadcn } = result.data;
   let codingPrompt = getCodingPrompt(shadcn);
 
-  const res = await together.chat.completions.create({
+  const res = await (together.chat.completions.create as Function)({
     model,
     temperature: 0.2,
+    max_tokens: 65536,
     stream: true,
     messages: [
       {
@@ -59,7 +60,15 @@ export async function POST(req: Request) {
         transform(chunk, controller) {
           if (chunk) {
             try {
-              let text = JSON.parse(chunk).choices[0].text;
+              let parsed = JSON.parse(chunk);
+              let choice = parsed.choices?.[0];
+              if (!choice) return;
+
+              if (choice.finish_reason) {
+                console.log('Stream finished:', choice.finish_reason);
+              }
+
+              let text = choice.delta?.content || choice.text;
               if (text) controller.enqueue(text);
             } catch (error) {
               console.error(error);
