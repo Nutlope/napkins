@@ -1,0 +1,10 @@
+packages:
+  - "."
+onlyBuiltDependencies:
+  - "es5-ext"
+  - "esbuild"
+  - "lzo"
+allowBuilds:
+  "es5-ext": true
+  "esbuild": true
+  "lzo": true
