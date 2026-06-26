@@ -84,7 +84,7 @@ export default function RootLayout({
           <p>
             Powered by{' '}
             <a
-              href='https://togetherai.link/'
+              href='https://togetherai.link/?utm_source=napkins&utm_medium=referral&utm_campaign=example-app'
               target='_blank'
               className='font-bold hover:underline underline-offset-4'
             >
