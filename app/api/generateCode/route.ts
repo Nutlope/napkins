@@ -3,8 +3,9 @@ import { getCodingPrompt } from '@/lib/prompt';
 import Together from 'together-ai';
 import { z } from 'zod';
 
+let together = new Together();
+
 export async function POST(req: Request) {
-  let together = new Together();
   let json = await req.json();
   let result = z
     .object({
