@@ -1,4 +1,5 @@
 import { getCodingPrompt } from '@/lib/prompt';
+import { NAPKINS_MODEL } from '@/lib/model';
 
 import Together from 'together-ai';
 import { z } from 'zod';
@@ -9,7 +10,6 @@ export async function POST(req: Request) {
   let json = await req.json();
   let result = z
     .object({
-      model: z.string(),
       imageUrl: z.string(),
       shadcn: z.boolean().default(false),
     })
@@ -19,15 +19,15 @@ export async function POST(req: Request) {
     return new Response(result.error.message, { status: 422 });
   }
 
-  let { model, imageUrl, shadcn } = result.data;
+  let { imageUrl, shadcn } = result.data;
   let codingPrompt = getCodingPrompt(shadcn);
 
   const res = await (together.chat.completions.create as Function)({
-    model,
-    temperature: 0.2,
+    model: NAPKINS_MODEL.id,
+    temperature: NAPKINS_MODEL.temperature,
+    top_p: NAPKINS_MODEL.topP,
     max_tokens: 65536,
     stream: true,
-    reasoning: { enabled: false },
     messages: [
       {
         role: 'user',

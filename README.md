@@ -4,12 +4,12 @@
 </a>
 
 <p align="center">
-  An open source wireframe to app generator. Powered by Kimi K2.5 & Together.ai.
+  An open source wireframe to app generator. Powered by Kimi K2.7 Code & Together.ai.
 </p>
 
 ## Tech stack
 
-- [Kimi K2.5](https://togetherai.link/?utm_source=napkins&utm_medium=referral&utm_campaign=example-app) for the LLM
+- [Kimi K2.7 Code](https://togetherai.link/?utm_source=napkins&utm_medium=referral&utm_campaign=example-app) for the LLM
 - [Together AI](https://togetherai.link/?utm_source=napkins&utm_medium=referral&utm_campaign=example-app) for LLM inference
 - [Sandpack](https://sandpack.codesandbox.io/) for the code sandbox
 - [S3](https://aws.amazon.com/s3/) for image storage

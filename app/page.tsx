@@ -17,8 +17,7 @@ import {
 import LoadingDots from '@/components/loading-dots';
 import { readStream } from '@/lib/utils';
 import { stripFences } from '@/lib/code-utils';
-
-const KIMI_MODEL = 'moonshotai/Kimi-K2.5';
+import { NAPKINS_MODEL } from '@/lib/model';
 
 export default function UploadComponent() {
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -76,7 +75,6 @@ export default function UploadComponent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: KIMI_MODEL,
           shadcn,
           imageUrl,
         }),
@@ -246,7 +244,7 @@ export default function UploadComponent() {
           <span className='text-sm font-medium text-gray-600'>AI Model</span>
           <span className='flex items-center gap-2 text-sm font-semibold text-gray-900'>
             <img src='/kimi.svg' alt='' className='size-5' />
-            Kimi K2.5
+            {NAPKINS_MODEL.label}
           </span>
         </div>
         <TooltipProvider>

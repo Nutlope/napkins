@@ -5,20 +5,16 @@
  * Usage:
  *   npx tsx scripts/eval-fences.ts              # all prod models, 3 runs each
  *   npx tsx scripts/eval-fences.ts 5             # all prod models, 5 runs each
- *   npx tsx scripts/eval-fences.ts 3 "moonshotai/Kimi-K2.5"  # single model
+ *   npx tsx scripts/eval-fences.ts 3 "moonshotai/Kimi-K2.7-Code"  # single model
  */
 import Together from "together-ai";
 import * as esbuild from "esbuild";
 import * as fs from "fs";
 import { getCodingPrompt } from "../lib/prompt";
 import { stripFences } from "../lib/code-utils";
+import { NAPKINS_MODEL } from "../lib/model";
 
-const PROD_MODELS = [
-  "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
-  "moonshotai/Kimi-K2.5",
-  "zai-org/GLM-5",
-  "MiniMaxAI/MiniMax-M2.5",
-];
+const PROD_MODELS = [NAPKINS_MODEL.id];
 
 const IMAGE_URL =
   "https://napkinsdev.s3.us-east-1.amazonaws.com/next-s3-uploads/be191fc8-149b-43eb-b434-baf883986c2c/appointment-booking.png";
@@ -47,14 +43,16 @@ interface Result {
 
 async function runOnce(model: string, runIdx: number): Promise<Result> {
   const start = Date.now();
+  const isCurrentKimi = model === NAPKINS_MODEL.id;
 
   try {
     const res = await (together.chat.completions.create as Function)({
       model,
-      temperature: 0.2,
+      temperature: isCurrentKimi ? NAPKINS_MODEL.temperature : 0.2,
+      ...(isCurrentKimi ? { top_p: NAPKINS_MODEL.topP } : {}),
       max_tokens: 65536,
       stream: true,
-      reasoning: { enabled: false },
+      ...(isCurrentKimi ? {} : { reasoning: { enabled: false } }),
       messages: [
         {
           role: "user",
